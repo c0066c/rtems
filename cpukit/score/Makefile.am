@@ -51,6 +51,12 @@ include_rtems_score_HEADERS += include/rtems/score/isr.h
 include_rtems_score_HEADERS += include/rtems/score/isrlevel.h
 include_rtems_score_HEADERS += include/rtems/score/isrlock.h
 include_rtems_score_HEADERS += include/rtems/score/freechain.h
+include_rtems_score_HEADERS += include/rtems/score/mpcp.h
+include_rtems_score_HEADERS += include/rtems/score/mpcpimpl.h
+include_rtems_score_HEADERS += include/rtems/score/dpcp.h
+include_rtems_score_HEADERS += include/rtems/score/dpcpimpl.h
+include_rtems_score_HEADERS += include/rtems/score/dnpp.h
+include_rtems_score_HEADERS += include/rtems/score/dnppimpl.h
 include_rtems_score_HEADERS += include/rtems/score/mrsp.h
 include_rtems_score_HEADERS += include/rtems/score/mrspimpl.h
 include_rtems_score_HEADERS += include/rtems/score/object.h
@@ -128,6 +134,7 @@ endif
 if HAS_SMP
 include_rtems_score_HEADERS += include/rtems/score/schedulerprioritysmpimpl.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerpriorityaffinitysmp.h
+include_rtems_score_HEADERS += include/rtems/score/schedulerMPCPsmp.h
 include_rtems_score_HEADERS += include/rtems/score/schedulersimplesmp.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerstrongapa.h
 include_rtems_score_HEADERS += include/rtems/score/smplockmcs.h
@@ -153,6 +160,7 @@ libscore_a_SOURCES += src/schedulerpriorityaffinitysmp.c
 libscore_a_SOURCES += src/schedulerprioritysmp.c
 libscore_a_SOURCES += src/schedulersimplesmp.c
 libscore_a_SOURCES += src/schedulerstrongapa.c
+libscore_a_SOURCES += src/schedulerMPCPsmp.c
 libscore_a_SOURCES += src/smp.c
 libscore_a_SOURCES += src/smplock.c
 libscore_a_SOURCES += src/smpmulticastaction.c
@@ -256,7 +264,7 @@ libscore_a_SOURCES += src/scheduleredf.c \
 libscore_a_SOURCES += src/schedulercbs.c \
     src/schedulercbsnodeinit.c \
     src/schedulercbsattachthread.c \
-    src/schedulercbscleanup.c \
+	src/schedulercbscleanup.c \
     src/schedulercbscreateserver.c \
     src/schedulercbsdestroyserver.c \
     src/schedulercbsdetachthread.c \

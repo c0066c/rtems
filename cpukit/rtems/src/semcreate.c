@@ -26,7 +26,7 @@
 #include <rtems/score/sysstate.h>
 
 #define SEMAPHORE_KIND_MASK ( RTEMS_SEMAPHORE_CLASS | RTEMS_INHERIT_PRIORITY \
-  | RTEMS_PRIORITY_CEILING | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING )
+  | RTEMS_PRIORITY_CEILING| RTEMS_DISTRIBUTED_PRIORITY_CEILING  |RTEMS_MULTIPROCESSOR_PRIORITY_CEILING |RTEMS_DISTRIBUTED_NO_PREEMPTIV | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING )
 
 rtems_status_code rtems_semaphore_create(
   rtems_name           name,
@@ -92,16 +92,42 @@ rtems_status_code rtems_semaphore_create(
     variant = SEMAPHORE_VARIANT_MUTEX_PRIORITY_CEILING;
   } else if (
     mutex_with_protocol
-      == ( RTEMS_BINARY_SEMAPHORE | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING )
+      == ( RTEMS_BINARY_SEMAPHORE|RTEMS_PRIORITY|RTEMS_DISTRIBUTED_NO_PREEMPTIV )
+  
   ) {
+/**#if defined(RTEMS_SMP)*/
+    variant = SEMAPHORE_VARIANT_DNPP;
+
+  }   else if (
+                 mutex_with_protocol
+                        == (   RTEMS_BINARY_SEMAPHORE|RTEMS_PRIORITY|RTEMS_MULTIPROCESSOR_PRIORITY_CEILING  )
+                           ) {
+                     variant = SEMAPHORE_VARIANT_MPCP;
+  }     
+             else if (
+                          mutex_with_protocol
+                                 == ( RTEMS_BINARY_SEMAPHORE|RTEMS_PRIORITY|RTEMS_DISTRIBUTED_PRIORITY_CEILING )
+                                    ) {
+                            variant = SEMAPHORE_VARIANT_DPCP;
+             }
+                            else if (
+            mutex_with_protocol
+                   ==  ( RTEMS_BINARY_SEMAPHORE | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING )
+
+             ) {
 #if defined(RTEMS_SMP)
-    variant = SEMAPHORE_VARIANT_MRSP;
+                                variant = SEMAPHORE_VARIANT_MRSP;
+
 #else
+
+
+
     /*
      * On uni-processor configurations the Multiprocessor Resource Sharing
      * Protocol is equivalent to the Priority Ceiling Protocol.
      */
-    variant = SEMAPHORE_VARIANT_MUTEX_PRIORITY_CEILING;
+
+                             variant = SEMAPHORE_VARIANT_MUTEX_PRIORITY_CEILING;
 #endif
   } else {
     return RTEMS_NOT_DEFINED;
@@ -209,6 +235,55 @@ rtems_status_code rtems_semaphore_create(
       }
 
       break;
+case SEMAPHORE_VARIANT_MPCP:
+    scheduler = _Thread_Scheduler_get_home( executing );
+    priority = _RTEMS_Priority_To_core( scheduler, priority_ceiling, &valid );
+
+    if ( valid ) {
+        status = _MPCP_Initialize(
+                &the_semaphore->Core_control.MPCP,
+                scheduler,
+                priority,
+                executing,
+                count == 0
+        );
+     } else {
+     status = STATUS_INVALID_PRIORITY;
+   }
+ break;
+ case SEMAPHORE_VARIANT_DPCP:
+     scheduler = _Thread_Scheduler_get_home( executing );
+     priority = _RTEMS_Priority_To_core( scheduler, priority_ceiling, &valid );
+
+   if ( valid ) {
+      status = _DPCP_Initialize(
+               &the_semaphore->Core_control.DPCP,
+               scheduler,
+               priority,
+               executing,
+               count == 0
+               );
+      } else {
+       status = STATUS_INVALID_PRIORITY;
+
+      }
+ break;
+case SEMAPHORE_VARIANT_DNPP:
+     scheduler = _Thread_Scheduler_get_home( executing );
+     priority = _RTEMS_Priority_To_core( scheduler, priority_ceiling, &valid );
+
+     if ( valid ) {
+         status = _DNPP_Initialize(
+               &the_semaphore->Core_control.DNPP,
+                 scheduler,
+                 priority,
+                 executing,
+                 count == 0
+      );
+  } else {
+      status = STATUS_INVALID_PRIORITY;
+       }
+    break;
 #endif
     default:
       _Assert(

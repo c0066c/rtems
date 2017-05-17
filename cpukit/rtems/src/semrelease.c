@@ -94,6 +94,34 @@ rtems_status_code rtems_semaphore_release( rtems_id id )
       );
       break;
 #endif
+ #if defined(RTEMS_SMP)
+     case SEMAPHORE_VARIANT_MPCP:
+        status = _MPCP_Surrender(
+        &the_semaphore->Core_control.MPCP,
+                     executing,
+                     &queue_context
+          );
+      break;
+#endif
+#if defined(RTEMS_SMP)
+      case SEMAPHORE_VARIANT_DPCP:
+         status = _DPCP_Surrender(
+                 &the_semaphore->Core_control.DPCP,
+                 executing,
+                 &queue_context
+                    );
+      break;
+#endif
+#if defined(RTEMS_SMP)
+  case SEMAPHORE_VARIANT_DNPP:
+        status = _DNPP_Surrender(
+              &the_semaphore->Core_control.DNPP,
+             executing,
+             &queue_context
+              );
+  break;
+#endif
+   
     default:
       _Assert( the_semaphore->variant == SEMAPHORE_VARIANT_COUNTING );
       status = _CORE_semaphore_Surrender(

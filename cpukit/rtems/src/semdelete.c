@@ -69,6 +69,23 @@ rtems_status_code rtems_semaphore_delete(
       status = _MRSP_Can_destroy( &the_semaphore->Core_control.MRSP );
       break;
 #endif
+ #if defined(RTEMS_SMP)
+     case SEMAPHORE_VARIANT_MPCP:
+        status = _MPCP_Can_destroy( &the_semaphore->Core_control.MPCP );
+        break;
+#endif
+ #if defined(RTEMS_SMP)
+     case SEMAPHORE_VARIANT_DPCP:
+         status = _DPCP_Can_destroy( &the_semaphore->Core_control.DPCP );
+         break;
+#endif
+  #if defined(RTEMS_SMP)
+     case SEMAPHORE_VARIANT_DNPP:
+          status = _DNPP_Can_destroy( &the_semaphore->Core_control.DNPP );
+          break;
+#endif
+
+
     default:
       _Assert(
         the_semaphore->variant == SEMAPHORE_VARIANT_SIMPLE_BINARY
@@ -94,6 +111,21 @@ rtems_status_code rtems_semaphore_delete(
     case SEMAPHORE_VARIANT_MRSP:
       _MRSP_Destroy( &the_semaphore->Core_control.MRSP, &queue_context );
       break;
+#endif
+ #if defined(RTEMS_SMP)
+    case SEMAPHORE_VARIANT_MPCP:
+      _MPCP_Destroy( &the_semaphore->Core_control.MPCP, &queue_context );
+       break;
+#endif
+  #if defined(RTEMS_SMP)
+    case SEMAPHORE_VARIANT_DPCP:
+        _DPCP_Destroy( &the_semaphore->Core_control.DPCP, &queue_context );
+        break;
+#endif
+ #if defined(RTEMS_SMP)
+    case SEMAPHORE_VARIANT_DNPP:
+       _DNPP_Destroy( &the_semaphore->Core_control.DNPP, &queue_context );
+       break;
 #endif
     default:
       _Assert(

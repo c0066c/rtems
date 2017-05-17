@@ -98,6 +98,60 @@ static rtems_status_code _Semaphore_Set_priority(
       sc = RTEMS_SUCCESSFUL;
       break;
 #endif
+#if defined(RTEMS_SMP)
+    case SEMAPHORE_VARIANT_DPCP:
+        old_priority = _DPCP_Get_priority(
+        &the_semaphore->Core_control.DPCP,
+        scheduler
+          );
+
+      if ( new_priority != RTEMS_CURRENT_PRIORITY ) {
+         _DPCP_Set_priority(
+         &the_semaphore->Core_control.DPCP,
+         scheduler,
+         core_priority
+            );
+       }
+   sc = RTEMS_SUCCESSFUL;
+break;
+#endif
+#if defined(RTEMS_SMP)
+    case SEMAPHORE_VARIANT_DNPP:
+      old_priority = _DNPP_Get_priority(
+              &the_semaphore->Core_control.DNPP,
+              scheduler
+                 );
+             
+     if ( new_priority != RTEMS_CURRENT_PRIORITY ) {
+          _DNPP_Set_priority(
+         &the_semaphore->Core_control.DNPP,
+         scheduler,
+        core_priority
+           );
+       }
+    sc = RTEMS_SUCCESSFUL;
+    break;
+#endif
+#if defined(RTEMS_SMP)
+    case SEMAPHORE_VARIANT_MPCP:
+         old_priority = _MPCP_Get_priority(
+         &the_semaphore->Core_control.MPCP,
+          scheduler
+      );
+    if ( new_priority != RTEMS_CURRENT_PRIORITY ) {
+        _MPCP_Set_priority(
+        &the_semaphore->Core_control.MPCP,
+        scheduler,
+       core_priority
+        );
+      }
+ sc = RTEMS_SUCCESSFUL;
+break;
+ #endif
+  
+    
+    
+    
     default:
       _Assert(
         the_semaphore->variant == SEMAPHORE_VARIANT_MUTEX_INHERIT_PRIORITY

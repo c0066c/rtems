@@ -801,6 +801,7 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
     !defined(CONFIGURE_SCHEDULER_PRIORITY) && \
     !defined(CONFIGURE_SCHEDULER_PRIORITY_SMP) && \
     !defined(CONFIGURE_SCHEDULER_PRIORITY_AFFINITY_SMP) && \
+    !defined(CONFIGURE_SCHEDULER_PRIORITY_MPCP_SMP) && \
     !defined(CONFIGURE_SCHEDULER_STRONG_APA) && \
     !defined(CONFIGURE_SCHEDULER_SIMPLE) && \
     !defined(CONFIGURE_SCHEDULER_SIMPLE_SMP) && \
@@ -896,6 +897,35 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
       )
   #endif
 #endif
+ /*
+  *   * If the Deterministic Priority MPCP SMP Scheduler is selected, then configure for
+  *     * it.
+  *       */
+     #if defined(CONFIGURE_SCHEDULER_PRIORITY_MPCP_SMP)
+       #if !defined(CONFIGURE_SCHEDULER_NAME)
+         /** Configure the name of the scheduler instance */
+         #define CONFIGURE_SCHEDULER_NAME rtems_build_name('M', 'P', 'L', ' ')
+       #endif
+
+       #if !defined(CONFIGURE_SCHEDULER_CONTROLS)
+         /** Configure the context needed by the scheduler instance */
+         #define CONFIGURE_SCHEDULER_CONTEXT \
+           RTEMS_SCHEDULER_CONTEXT_MPCP_SMP( \
+                            dflt, \
+                            CONFIGURE_MAXIMUM_PRIORITY + 1 \
+                          )
+
+         /** Configure the controls for this scheduler instance */
+         #define CONFIGURE_SCHEDULER_CONTROLS \
+           RTEMS_SCHEDULER_CONTROL_MPCP_SMP( \
+                            dflt, \
+                            CONFIGURE_SCHEDULER_NAME \
+                          )
+       #endif
+     #endif
+
+
+
 
 /*
  * If the Strong APA Scheduler is selected, then configure for
@@ -2153,6 +2183,57 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
   #endif
 
   /*
+   *     * This macro is calculated to specify the memory required for
+   *         * Classic API Semaphores using MPCP. This is only available in
+   *             * SMP configurations.
+   *                 */
+   #if !defined(RTEMS_SMP) || \
+         !defined(CONFIGURE_MAXIMUM_MPCP_SEMAPHORES)
+     #define _CONFIGURE_MEMORY_FOR_MPCP_SEMAPHORES 0
+   #else
+     #define _CONFIGURE_MEMORY_FOR_MPCP_SEMAPHORES \
+           CONFIGURE_MAXIMUM_MPCP_SEMAPHORES * \
+         _Configure_From_workspace( \
+                            RTEMS_ARRAY_SIZE(_Scheduler_Table) * sizeof(Priority_Control) \
+                          )
+   #endif
+  /*
+   *     * This macro is calculated to specify the memory required for
+   *         * Classic API Semaphores using DPCP. This is only available in
+   *             * SMP configurations.
+   *                 */
+   #if !defined(RTEMS_SMP) || \
+         !defined(CONFIGURE_MAXIMUM_DPCP_SEMAPHORES)
+     #define _CONFIGURE_MEMORY_FOR_DPCP_SEMAPHORES 0
+   #else
+     #define _CONFIGURE_MEMORY_FOR_DPCP_SEMAPHORES \
+           CONFIGURE_MAXIMUM_DPCP_SEMAPHORES * \
+         _Configure_From_workspace( \
+                            RTEMS_ARRAY_SIZE(_Scheduler_Table) * sizeof(Priority_Control) \
+                          )
+   #endif
+
+   /*
+    *     *     * This macro is calculated to specify the memory required for
+    *         *         * Classic API Semaphores using DNPP. This is only available in
+    *             *             * SMP configurations.
+    *                 *                 */
+    #if !defined(RTEMS_SMP) || \
+              !defined(CONFIGURE_MAXIMUM_DNPP_SEMAPHORES)
+      #define _CONFIGURE_MEMORY_FOR_DNPP_SEMAPHORES 0
+    #else
+      #define _CONFIGURE_MEMORY_FOR_DNPP_SEMAPHORES \
+                CONFIGURE_MAXIMUM_DNPP_SEMAPHORES * \
+          _Configure_From_workspace( \
+                                               RTEMS_ARRAY_SIZE(_Scheduler_Table) * sizeof(Priority_Control) \
+                                             )
+    #endif
+
+
+
+
+
+  /*
    * This macro is calculated to specify the memory required for
    * Classic API Semaphores.
    *
@@ -2166,6 +2247,54 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
       _Configure_Object_RAM(_semaphores, sizeof(Semaphore_Control) ) + \
         _CONFIGURE_MEMORY_FOR_MRSP_SEMAPHORES
   #endif
+ /*
+  *     * This macro is calculated to specify the memory required for
+  *         * Classic API Semaphores.
+  *             *
+  *                 * If there are no user or support semaphores defined, then we can assume
+  *                     * that no memory need be allocated at all for semaphores.
+  *                         */
+   #if _CONFIGURE_SEMAPHORES == 0
+     #define _CONFIGURE_MEMORY_FOR_SEMAPHORES(_semaphores) 0
+   #else
+     #define _CONFIGURE_MEMORY_FOR_SEMAPHORES(_semaphores) \
+           _Configure_Object_RAM(_semaphores, sizeof(Semaphore_Control) ) + \
+         _CONFIGURE_MEMORY_FOR_MPCP_SEMAPHORES
+   #endif
+
+ /*
+  *     * This macro is calculated to specify the memory required for
+  *         * Classic API Semaphores.
+  *             *
+  *                 * If there are no user or support semaphores defined, then we can assume
+  *                     * that no memory need be allocated at all for semaphores.
+  *                         */
+   #if _CONFIGURE_SEMAPHORES == 0
+     #define _CONFIGURE_MEMORY_FOR_SEMAPHORES(_semaphores) 0
+   #else
+     #define _CONFIGURE_MEMORY_FOR_SEMAPHORES(_semaphores) \
+           _Configure_Object_RAM(_semaphores, sizeof(Semaphore_Control) ) + \
+         _CONFIGURE_MEMORY_FOR_DPCP_SEMAPHORES
+   #endif
+  /*
+   *    *     * This macro is calculated to specify the memory required for
+   *       *         * Classic API Semaphores.
+   *          *             *
+   *             *                 * If there are no user or support semaphores defined, then we can assume
+   *                *                     * that no memory need be allocated at all for semaphores.
+   *                   *                         */
+    #if _CONFIGURE_SEMAPHORES == 0
+      #define _CONFIGURE_MEMORY_FOR_SEMAPHORES(_semaphores) 0
+    #else
+      #define _CONFIGURE_MEMORY_FOR_SEMAPHORES(_semaphores) \
+                _Configure_Object_RAM(_semaphores, sizeof(Semaphore_Control) ) + \
+          _CONFIGURE_MEMORY_FOR_DNPP_SEMAPHORES
+    #endif
+
+
+
+
+
 
   #ifndef CONFIGURE_MAXIMUM_MESSAGE_QUEUES
     /**
@@ -3160,7 +3289,10 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
     #ifdef CONFIGURE_SCHEDULER_PRIORITY_SMP
       Scheduler_priority_SMP_Node Priority_SMP;
     #endif
-    #ifdef CONFIGURE_SCHEDULER_PRIORITY_AFFINITY_SMP
+       #ifdef CONFIGURE_SCHEDULER_PRIORITY_MPCP_SMP
+             Scheduler_MPCP_SMP_Node Priority_MPCP_SMP;
+                  #endif
+#ifdef CONFIGURE_SCHEDULER_PRIORITY_AFFINITY_SMP
       Scheduler_priority_affinity_SMP_Node Priority_affinity_SMP;
     #endif
     #ifdef CONFIGURE_SCHEDULER_STRONG_APA

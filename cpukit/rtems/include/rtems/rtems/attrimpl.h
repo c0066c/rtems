@@ -192,7 +192,7 @@ RTEMS_INLINE_ROUTINE bool _Attributes_Has_at_most_one_protocol(
 )
 {
   attribute_set &= RTEMS_INHERIT_PRIORITY | RTEMS_PRIORITY_CEILING
-    | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING;
+    |RTEMS_MULTIPROCESSOR_PRIORITY_CEILING  | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING | RTEMS_DISTRIBUTED_NO_PREEMPTIV | RTEMS_DISTRIBUTED_PRIORITY_CEILING ;
 
   return ( attribute_set & ( attribute_set - 1 ) ) == 0;
 }
@@ -225,6 +225,40 @@ RTEMS_INLINE_ROUTINE bool _Attributes_Is_multiprocessor_resource_sharing(
   return ( attribute_set & RTEMS_MULTIPROCESSOR_RESOURCE_SHARING ) != 0;
 }
 
+
+ /**
+    *  @brief Checks if the Multiprocessor Priority Ceiling  Protocol
+  * attribute
+  *  is enabled in the attribute_set
+  *
+  *  This function returns TRUE if the Multiprocessor Priority Ceiling Protocol
+  *  attribute is enabled in the attribute_set and FALSE otherwise.
+   */
+RTEMS_INLINE_ROUTINE bool _Attributes_Is_multiprocessor_priority_ceiling(
+    rtems_attribute attribute_set
+  )
+ {
+   return ( attribute_set & RTEMS_MULTIPROCESSOR_PRIORITY_CEILING ) != 0;
+ }
+  /**
+   *  Checks if the Distributed Priority Ceiling  Protocol
+   *  attribute  is enabled in the attribute_set
+   *  This function returns TRUE if the Distributed Priority Ceiling Protocol
+   *  attribute is enabled in the attribute_set and FALSE otherwise.
+   */
+ RTEMS_INLINE_ROUTINE bool _Attributes_Is_distributed_priority_ceiling(
+              rtems_attribute attribute_set
+                 )
+      {
+         return ( attribute_set & RTEMS_DISTRIBUTED_PRIORITY_CEILING ) != 0;
+                }
+ RTEMS_INLINE_ROUTINE bool _Attributes_Is_distributed_no_preemptiv(
+                         rtems_attribute attribute_set
+                                           )
+  {  return ( attribute_set & RTEMS_DISTRIBUTED_NO_PREEMPTIV ) != 0;
+                   }
+
+
 /**
  *  @brief Checks if the barrier automatic release
  *  attribute is enabled in the attribute_set
@@ -238,6 +272,7 @@ RTEMS_INLINE_ROUTINE bool _Attributes_Is_barrier_automatic(
 {
    return ( attribute_set & RTEMS_BARRIER_AUTOMATIC_RELEASE ) ? true : false;
 }
+
 
 /**
  *  @brief Checks if the system task attribute

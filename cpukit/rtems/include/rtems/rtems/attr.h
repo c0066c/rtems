@@ -140,7 +140,23 @@ typedef uint32_t   rtems_attribute;
 #define RTEMS_PRIORITY_CEILING        0x00000080
 
 /**
- *  This attribute constant indicates that the Classic API Semaphore instance
+  *  This attribute constant indicates that the Classic API Semaphore
+ * instance
+  *  created will NOT use the Multiprocessor Priority Ceiling Protocol.
+ */
+ #define RTEMS_NO_MULTIPROCESSOR_PRIORITY_CEILING 0x00000000
+  
+   /**
+    *  This attribute constant indicates that the Classic API Semaphore instance
+    *  created will use the Multiprocessor Priority Ceiling Protocol.
+    *
+    *  @note The semaphore instance must be a binary semaphore.
+    */
+
+#define RTEMS_MULTIPROCESSOR_PRIORITY_CEILING 0x00000072
+ #define RTEMS_DISTRIBUTED_PRIORITY_CEILING 0x00000074
+ #define RTEMS_DISTRIBUTED_NO_PREEMPTIV     0x00000081
+  /**This attribute constant indicates that the Classic API Semaphore instance
  *  created will NOT use the Multiprocessor Resource Sharing Protocol.
  */
 #define RTEMS_NO_MULTIPROCESSOR_RESOURCE_SHARING 0x00000000

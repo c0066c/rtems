@@ -21,7 +21,9 @@
 #include <rtems/score/coremuteximpl.h>
 #include <rtems/score/coresemimpl.h>
 #include <rtems/score/mrspimpl.h>
-
+#include <rtems/score/mpcpimpl.h>
+#include <rtems/score/dpcpimpl.h>
+#include <rtems/score/dnppimpl.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,11 +38,21 @@ typedef enum {
   SEMAPHORE_VARIANT_MUTEX_PRIORITY_CEILING,
   SEMAPHORE_VARIANT_MUTEX_NO_PROTOCOL,
   SEMAPHORE_VARIANT_SIMPLE_BINARY,
-  SEMAPHORE_VARIANT_COUNTING
+  SEMAPHORE_VARIANT_COUNTING,
 #if defined(RTEMS_SMP)
-  ,
-  SEMAPHORE_VARIANT_MRSP
+   SEMAPHORE_VARIANT_MPCP,
 #endif
+#if defined (RTEMS_SMP)
+   SEMAPHORE_VARIANT_DNPP,
+#endif
+ #if defined(RTEMS_SMP)
+   SEMAPHORE_VARIANT_DPCP,
+#endif
+#if defined(RTEMS_SMP)
+ SEMAPHORE_VARIANT_MRSP
+#endif
+
+
 } Semaphore_Variant;
 
 typedef enum {

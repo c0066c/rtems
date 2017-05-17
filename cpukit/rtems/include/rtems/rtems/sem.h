@@ -42,7 +42,9 @@
 #include <rtems/score/object.h>
 #include <rtems/score/coresem.h>
 #include <rtems/score/mrsp.h>
-
+#include <rtems/score/mpcp.h>
+#include <rtems/score/dpcp.h>
+#include <rtems/score/dnpp.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -92,8 +94,18 @@ typedef struct {
     CORE_semaphore_Control Semaphore;
 
 #if defined(RTEMS_SMP)
-    MRSP_Control MRSP;
+MRSP_Control MRSP;
 #endif
+#if defined (RTEMS_SMP)
+MPCP_Control MPCP;
+#endif
+ #if defined (RTEMS_SMP)
+ DPCP_Control DPCP;
+  #endif
+   #if defined (RTEMS_SMP)
+   DNPP_Control DNPP;
+      #endif
+
   } Core_control;
 
   /**
@@ -275,4 +287,5 @@ rtems_status_code rtems_semaphore_set_priority(
 #endif
 
 #endif
+
 /*  end of include file */

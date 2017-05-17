@@ -111,6 +111,37 @@ rtems_status_code rtems_semaphore_obtain(
       );
       break;
 #endif
+#if defined(RTEMS_SMP)
+     case SEMAPHORE_VARIANT_MPCP:
+          status = _MPCP_Seize(
+          &the_semaphore->Core_control.MPCP,
+          executing,
+          wait,
+         &queue_context
+         );
+      break;
+#endif
+#if defined(RTEMS_SMP)
+      case SEMAPHORE_VARIANT_DPCP:
+           status = _DPCP_Seize(
+           &the_semaphore->Core_control.DPCP,
+           executing,
+           wait,
+           &queue_context
+           );
+      break;
+#endif
+#if defined(RTEMS_SMP)
+      case SEMAPHORE_VARIANT_DNPP:
+           status = _DNPP_Seize(
+           &the_semaphore->Core_control.DNPP,
+           executing,
+           wait,
+           &queue_context
+           );
+      break;
+#endif
+
     default:
       _Assert(
         the_semaphore->variant == SEMAPHORE_VARIANT_SIMPLE_BINARY

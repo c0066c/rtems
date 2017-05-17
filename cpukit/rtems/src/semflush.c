@@ -55,6 +55,30 @@ rtems_status_code rtems_semaphore_flush( rtems_id id )
       );
       return RTEMS_NOT_DEFINED;
 #endif
+#if defined(RTEMS_SMP)
+      case SEMAPHORE_VARIANT_MPCP:
+        _Thread_queue_Release(
+        &the_semaphore->Core_control.Wait_queue,
+        &queue_context
+          );
+      return RTEMS_NOT_DEFINED;
+#endif
+#if defined(RTEMS_SMP)
+       case SEMAPHORE_VARIANT_DPCP:
+        _Thread_queue_Release(
+       &the_semaphore->Core_control.Wait_queue,
+       &queue_context
+         );
+       return RTEMS_NOT_DEFINED;
+#endif
+#if defined(RTEMS_SMP)
+       case SEMAPHORE_VARIANT_DNPP:
+         _Thread_queue_Release(
+         &the_semaphore->Core_control.Wait_queue,
+        &queue_context
+          );
+        return RTEMS_NOT_DEFINED;
+#endif
     default:
       _Assert(
         the_semaphore->variant == SEMAPHORE_VARIANT_MUTEX_INHERIT_PRIORITY
