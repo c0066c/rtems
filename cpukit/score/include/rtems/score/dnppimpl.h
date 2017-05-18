@@ -363,18 +363,20 @@ RTEMS_INLINE_ROUTINE Status_Control _DNPP_Seize(
 
       _Scheduler_Set( scheduler,executing,3 );
 /** _DPCP_Migrate(executing, cpu_semaphore);
-/**scheduler_node = _Thread_Scheduler_get_node_by_index(executing,1);
+/scheduler_node = _Thread_Scheduler_get_node_by_index(executing,1);
    _DPCP_Acquire_critical(dpcp, queue_context );*/
  /** _Scheduler_Node_set_user(scheduler_node,executing);*/
    scheduler = _Thread_Scheduler_get_home( executing );
  owner = _DNPP_Get_owner(dnpp);
-  _DNPP_Set_Ceiling ( dnpp,scheduler);
+ _DNPP_Set_Ceiling ( dnpp,scheduler);
     /** _DPCP_Migrate(owner,cpu_semaphore);*/
     if ( owner == NULL ){
 /**   _DPCP_Migrate(owner,cpu_semaphore);*/
         status = _DNPP_Set_new( dnpp, executing, queue_context );
-    _DNPP_Migrate(executing, cpu_semaphore);
+  /**   _DNPP_Set_Ceiling ( dnpp,scheduler);*/
+        _DNPP_Migrate(executing, cpu_semaphore);
     
+
     }
    else if (owner == executing){
     _DNPP_Release (dnpp, queue_context);
@@ -384,7 +386,9 @@ RTEMS_INLINE_ROUTINE Status_Control _DNPP_Seize(
 /**_DPCP_Migrate(owner,cpu_semaphore);*/
 
  status = _DNPP_Wait(dnpp,executing,DNPP_TQ_OPERATIONS,queue_context);
-  _DNPP_Migrate(executing,cpu_semaphore);  
+ /**  _DNPP_Set_Ceiling ( dnpp,scheduler);*/
+ _DNPP_Migrate(executing,cpu_semaphore);  
+
 
 /** _Wait( dpcp, DPCP_TQ_OPERATIONS,executing, queue_context );*/
    } else {

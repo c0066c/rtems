@@ -781,6 +781,7 @@ struct _Thread_Control {
    *  quantum.  The algorithm may be specified as none which case,
    *  no limit is in place.
    */
+  uint32_t    boost;
   Thread_CPU_budget_algorithms          budget_algorithm;
   /** This field is the method invoked with the budgeted time is consumed. */
   Thread_CPU_budget_algorithm_callout   budget_callout;

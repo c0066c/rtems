@@ -27,8 +27,7 @@ extern "C" {
            *    *  One ceiling priority per scheduler instance.
            *       */
           Priority_Control *ceiling_priorities;
-  /** uint32_t boost[32];*/
-          uint32_t boost;
+      
   } MPCP_Control;
 
   /** @} */

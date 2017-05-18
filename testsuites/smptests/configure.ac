@@ -79,6 +79,10 @@ smplock01/Makefile
 smpmigration01/Makefile
 smpmigration02/Makefile
 smpmrsp01/Makefile
+smpmpcp01/Makefile
+smpmpcp02/Makefile
+smpdpcp01/Makefile
+smpdnpp01/Makefile
 smpmutex01/Makefile
 smpmutex02/Makefile
 smppsxaffinity01/Makefile

@@ -283,11 +283,11 @@ static void block_first(rtems_task_argument arg)
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
     
     sc = rtems_semaphore_obtain(ctx->mpcp_ids[7], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-      if (sc == RTEMS_SUCCESSFUL)
+    /**  if (sc == RTEMS_SUCCESSFUL)
             puts("OK ");
       else
             printf("Can't obtain semaphore: %s\n", rtems_status_text(sc));
-   
+   */
     sc = rtems_task_wake_after(5);
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
     
@@ -305,11 +305,11 @@ static void block_second(rtems_task_argument arg)
     rtems_status_code sc;
                           
     sc = rtems_semaphore_obtain(ctx->mpcp_ids[8], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-     if (sc == RTEMS_SUCCESSFUL)
+   /**  if (sc == RTEMS_SUCCESSFUL)
          puts("OK ");
      else
         printf("Can't obtain semaphore: %s\n", rtems_status_text(sc));
-
+*/
     rtems_task_wake_after(1);
    
     sc=rtems_semaphore_release(ctx->mpcp_ids[8]);
@@ -492,7 +492,9 @@ static void test_mpcp_block_critical(test_context *ctx)
     rtems_task_priority prio;
  
     puts("test MPCP block critical");
-   
+  puts ("");
+  puts ("");
+
     sc = rtems_task_create(
     rtems_build_name(' ', 'L', 'O', 'W'),
                       5,
@@ -526,27 +528,28 @@ static void test_mpcp_block_critical(test_context *ctx)
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
     
     sc= rtems_task_start(ctx->low_task_id[5],block_second,(rtems_task_argument) &run);
-     if (sc== RTEMS_SUCCESSFUL)
+    /** if (sc== RTEMS_SUCCESSFUL)
          puts ("OK");
     else
-         printf ("Can't start task: %s\n", rtems_status_text(sc));
+         printf ("Can't start task: %s\n", rtems_status_text(sc));*/
     rtems_test_assert(run);
     sc = rtems_task_wake_after(20);
-     if (sc == RTEMS_SUCCESSFUL)
+    /** if (sc == RTEMS_SUCCESSFUL)
          puts("OK ");
     else
-         printf("Can't sleep task: %s\n", rtems_status_text(sc));
+         printf("Can't sleep task: %s\n", rtems_status_text(sc));*/
     rtems_test_assert(run);
     run=false;
     rtems_task_wake_after(5);
-    rtems_cpu_usage_report();
-    print_switch_events(ctx);
     
+    print_switch_events(ctx);
+    rtems_cpu_usage_report();
+
     sc = rtems_semaphore_delete(ctx->mpcp_ids[7]);
-     if (sc == RTEMS_SUCCESSFUL)
+    /** if (sc == RTEMS_SUCCESSFUL)
        puts("OK ");
      else
-       printf("Can't delete semaphore: %s\n", rtems_status_text(sc));
+       printf("Can't delete semaphore: %s\n", rtems_status_text(sc));*/
      sc= rtems_semaphore_delete(ctx->mpcp_ids[8]);
      rtems_test_assert(sc == RTEMS_SUCCESSFUL);
      
@@ -611,9 +614,9 @@ static void test_mpcp_obtain_critical(test_context *ctx)
     sc = rtems_semaphore_release(ctx->mpcp_ids[6]);
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
     
-    rtems_cpu_usage_report();
-    print_switch_events(ctx);
-    
+       print_switch_events(ctx);
+     rtems_cpu_usage_report();
+
     sc = rtems_semaphore_delete(ctx->mpcp_ids[6]);
     if (sc == RTEMS_SUCCESSFUL)
       puts("OK ");
@@ -864,9 +867,9 @@ static void Init(rtems_task_argument arg)
 
 /** test_mpcp_ceiling(ctx);*/
 /**test_mpcp_multiple_access(ctx);*/
-  test_mpcp_obtain_critical(ctx);
-/**  test_mpcp_block_critical(ctx);*/
-/**test_mpcp_critical_semaphore(ctx);
+/**  test_mpcp_obtain_critical(ctx);*/
+ /**test_mpcp_block_critical(ctx);*/
+test_mpcp_critical_semaphore(ctx);
 /**test_overhead(ctx);*/
 /**test_nested_obtain_error(ctx);
 */

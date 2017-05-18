@@ -187,8 +187,8 @@ RTEMS_INLINE_ROUTINE Status_Control _MPCP_Initialize(
  for ( i = 0 ; i < scheduler_count ; ++i ) {
   const Scheduler_Control *scheduler_of_index;
   scheduler_of_index = &_Scheduler_Table[ i ];
-/**mpcp->boost[i]=0;*/
- mpcp->boost=0;
+
+ 
   if ( scheduler != scheduler_of_index ) {
    mpcp->ceiling_priorities[ i ] =
    _Scheduler_Map_priority( scheduler_of_index, 0 );
@@ -324,7 +324,6 @@ RTEMS_INLINE_ROUTINE Status_Control _MPCP_Seize(
   _MPCP_Acquire_critical( mpcp, queue_context );
   owner = _MPCP_Get_owner( mpcp );
   
-mpcp->boost++;
   if ( owner == NULL ) {
 /** function set the new owner to the resource */ 
      status = _MPCP_Claim_ownership( mpcp, executing, queue_context );
@@ -358,7 +357,7 @@ RTEMS_INLINE_ROUTINE Status_Control _MPCP_Surrender(
 }
  
 _MPCP_Acquire_critical( mpcp, queue_context );
-mpcp->boost--; 
+ 
 _MPCP_Set_owner( mpcp, NULL );
    _MPCP_Remove_priority( executing, &mpcp->Ceiling_priority, queue_context );
    heads = mpcp->Wait_queue.Queue.heads;
