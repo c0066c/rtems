@@ -82,7 +82,9 @@ smpmrsp01/Makefile
 smpmpcp01/Makefile
 smpmpcp02/Makefile
 smpdpcp01/Makefile
+smpdpcp02/Makefile
 smpdnpp01/Makefile
+smpdnpp02/Makefile
 smpmutex01/Makefile
 smpmutex02/Makefile
 smppsxaffinity01/Makefile

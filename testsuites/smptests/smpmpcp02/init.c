@@ -112,43 +112,42 @@ static void print_switch_events(test_context *ctx)
 }
 
  static  void create_sema(
-                 test_context *ctx,
-                         rtems_id *id,
-                                 rtems_task_priority prio
-                                          )
-     {
-              uint32_t cpu_count = rtems_get_processor_count();
-                   uint32_t index;
-                        rtems_status_code sc;
+   test_context *ctx,
+   rtems_id *id,
+  rtems_task_priority prio
+   )
+ {
+ uint32_t cpu_count = rtems_get_processor_count();
+ uint32_t index;
+ rtems_status_code sc;
 
-                             sc = rtems_semaphore_create(
-                                           rtems_build_name('M', 'P', 'C', 'P'),
-                                                            1,
-                                                             RTEMS_MULTIPROCESSOR_PRIORITY_CEILING
-                                                             /** RTEMS_PRIORITY_CEILING*/
-                                                            /** RTEMS_DISTRIBUTED_PRIORITY_CEILING*/
-                                                               |RTEMS_PRIORITY | RTEMS_BINARY_SEMAPHORE,
-                                                                /**RTEMS_BINARY_SEMAPHORE
-                                                                 *                  | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING,*/
-                                                                                 prio,
-                                                                                          id
-                                                                                                     );
-                                 rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-                                     for (index = 1; index < cpu_count; index = ((index + 2) & ~UINT32_C(1))) {
-                                                      rtems_task_priority old_prio;
-                                                                   old_prio = 1;
-                                                                                sc = rtems_semaphore_set_priority(
-                                                                                                     *id,
-                                                                                                                  ctx->scheduler_ids[index],
-                                                                                                                               prio,
-                                                                                                                                            &old_prio
-                                                                                                                                                       );
-                                                                                     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-                                                                                          rtems_test_assert(old_prio == 0);
-                                                                                                   }
-                                      }
+ sc = rtems_semaphore_create(
+   rtems_build_name('M', 'P', 'C', 'P'),
+                    1,
+  RTEMS_MULTIPROCESSOR_PRIORITY_CEILING
+ /** RTEMS_PRIORITY_CEILING*/
+ /** RTEMS_DISTRIBUTED_PRIORITY_CEILING*/
+ |RTEMS_PRIORITY | RTEMS_BINARY_SEMAPHORE,
+ /**RTEMS_BINARY_SEMAPHORE
+       *      | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING,*/
+     prio,
+     id
+       );
+    rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+       for (index = 1; index < cpu_count; index = ((index + 2) & ~UINT32_C(1))) {
+               rtems_task_priority old_prio;
 
-
+                   old_prio = 1;
+                       sc = rtems_semaphore_set_priority(
+                                     *id,
+                                           ctx->scheduler_ids[index],
+                                                 prio,
+                                                       &old_prio
+                                                           );
+                           rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+                               rtems_test_assert(old_prio == 0);
+                                 }
+ }
 
 
 static void obtain_and_release_task(rtems_task_argument arg)
@@ -660,7 +659,7 @@ static void test_overhead(test_context *ctx)
     
     create_sema(ctx, &ctx->mpcp_ids[12],1 );
   
- /**   while (counter!=200) {
+ /**   while (counter!=1000) {
      if(gap>max){
         max=gap;
         printf("Overhead by obtain: %d\n", gap);
@@ -866,11 +865,11 @@ static void Init(rtems_task_argument arg)
 
 
 /** test_mpcp_ceiling(ctx);*/
-/**test_mpcp_multiple_access(ctx);*/
+/**test_mpcp_multiple_access(ctx);
 /**  test_mpcp_obtain_critical(ctx);*/
- /**test_mpcp_block_critical(ctx);*/
-test_mpcp_critical_semaphore(ctx);
-/**test_overhead(ctx);*/
+/**test_mpcp_block_critical(ctx);*/
+/**test_mpcp_critical_semaphore(ctx);*/
+test_overhead(ctx);
 /**test_nested_obtain_error(ctx);
 */
  rtems_test_assert(rtems_resource_snapshot_check(&snapshot));
