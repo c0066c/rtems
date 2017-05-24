@@ -802,6 +802,7 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
     !defined(CONFIGURE_SCHEDULER_PRIORITY_SMP) && \
     !defined(CONFIGURE_SCHEDULER_PRIORITY_AFFINITY_SMP) && \
     !defined(CONFIGURE_SCHEDULER_PRIORITY_MPCP_SMP) && \
+    !defined(CONFIGURE_SCHEDULER_PRIORITY_DPCP_SMP) && \
     !defined(CONFIGURE_SCHEDULER_STRONG_APA) && \
     !defined(CONFIGURE_SCHEDULER_SIMPLE) && \
     !defined(CONFIGURE_SCHEDULER_SIMPLE_SMP) && \
@@ -923,6 +924,33 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
                           )
        #endif
      #endif
+
+      /*
+       *    *   * If the Deterministic Priority DPCP SMP Scheduler is selected, then configure for
+       *       *     * it.
+       *          *       */
+          #if defined(CONFIGURE_SCHEDULER_PRIORITY_DPCP_SMP)
+            #if !defined(CONFIGURE_SCHEDULER_NAME)
+              /** Configure the name of the scheduler instance */
+              #define CONFIGURE_SCHEDULER_NAME rtems_build_name('D', 'P', 'L', ' ')
+            #endif
+
+            #if !defined(CONFIGURE_SCHEDULER_CONTROLS)
+              /** Configure the context needed by the scheduler instance */
+              #define CONFIGURE_SCHEDULER_CONTEXT \
+                RTEMS_SCHEDULER_CONTEXT_DPCP_SMP( \
+                                                     dflt, \
+                                                     CONFIGURE_MAXIMUM_PRIORITY + 1 \
+                                                   )
+
+              /** Configure the controls for this scheduler instance */
+              #define CONFIGURE_SCHEDULER_CONTROLS \
+                RTEMS_SCHEDULER_CONTROL_DPCP_SMP( \
+                                                     dflt, \
+                                                     CONFIGURE_SCHEDULER_NAME \
+                                                   )
+            #endif
+          #endif
 
 
 
@@ -3292,6 +3320,10 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
        #ifdef CONFIGURE_SCHEDULER_PRIORITY_MPCP_SMP
              Scheduler_MPCP_SMP_Node Priority_MPCP_SMP;
                   #endif
+ #ifdef CONFIGURE_SCHEDULER_PRIORITY_DPCP_SMP
+            Scheduler_DPCP_SMP_Node Priority_DPCP_SMP;
+                 #endif
+                   
 #ifdef CONFIGURE_SCHEDULER_PRIORITY_AFFINITY_SMP
       Scheduler_priority_affinity_SMP_Node Priority_affinity_SMP;
     #endif

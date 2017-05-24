@@ -32,7 +32,7 @@ RTEMS_INLINE_ROUTINE void _MPCP_Release(
   Thread_queue_Context *queue_context
 )
 {
-  _Thread_queue_Release( &mpcp->Wait_queue, queue_context );
+ _Thread_queue_Release( &mpcp->Wait_queue, queue_context );
 }
 
 RTEMS_INLINE_ROUTINE Thread_Control *_MPCP_Get_owner(
@@ -198,70 +198,10 @@ RTEMS_INLINE_ROUTINE Status_Control _MPCP_Initialize(
 }
   _Thread_queue_Object_initialize( &mpcp->Wait_queue );
 
-/**_Thread_queue_Initialize( &mpcp->Wait_queue ); */
    return STATUS_SUCCESSFUL;
 }
-/**
-  RTEMS_INLINE_ROUTINE Status_Control _MPCP_Wait_for_ownership(
-              MPCP_Control         *mpcp,
-                Thread_Control       *executing,
-                  Thread_queue_Context *queue_context
-            )
-    {
-          Status_Control status;
-            Priority_Node  ceiling_priority;
-
-              status = _MPCP_Raise_priority(
-                          mpcp,
-                              executing,
-                                  &ceiling_priority,
-                                      queue_context
-                                        );
-
-                if ( status != STATUS_SUCCESSFUL ) {
-                        _MPCP_Release( mpcp, queue_context );
-                            return status;
-                              }
-
-                  _Thread_queue_Context_set_deadlock_callout(
-                              queue_context,
-                                  _Thread_queue_Deadlock_status
-                                    );
-                    status = _Thread_queue_Enqueue_sticky(
-                                &mpcp->Wait_queue.Queue,
-                                    MPCP_TQ_OPERATIONS,
-                                        executing,
-                                            queue_context
-                                              );
-
-                      if ( status == STATUS_SUCCESSFUL ) {
-                              _MPCP_Replace_priority( mpcp, executing, &ceiling_priority );
-                                } else {
-                                        Thread_queue_Context  queue_context;
-                                            Per_CPU_Control      *cpu_self;
-                                                int                   sticky_level_change;
-
-                                                    if ( status != STATUS_DEADLOCK ) {
-                                                              sticky_level_change = -1;
-                                                                  } else {
-                                                                            sticky_level_change = 0;
-                                                                                }
-
-                                                        _ISR_lock_ISR_disable( &queue_context.Lock_context.Lock_context );
-                                                            _MPCP_Remove_priority( executing, &ceiling_priority, &queue_context );
-                                                                cpu_self = _Thread_Dispatch_disable_critical(
-                                                                              &queue_context.Lock_context.Lock_context
-                                                                                  );
-                                                                    _ISR_lock_ISR_enable( &queue_context.Lock_context.Lock_context );
-                                                                        _Thread_Priority_and_sticky_update( executing, sticky_level_change );
-                                                                            _Thread_Dispatch_enable( cpu_self );
-                                                                              }
-
-                        return status;
-    }
-*/
 /** this method blocks the thread which is waiting to access a resource.
- * type blocking: suspending */
+* type blocking: suspending */
 RTEMS_INLINE_ROUTINE Status_Control _MPCP_Wait( 
   MPCP_Control            *mpcp,
   const Thread_queue_Operations *operations,
@@ -299,16 +239,6 @@ RTEMS_INLINE_ROUTINE Status_Control _MPCP_Wait(
 );
    status= _Thread_Wait_get_status( executing );
     return status;
-/**   
-    status = _Thread_queue_Enqueue_sticky(
-                &mpcp->Wait_queue.Queue,
-                    MPCP_TQ_OPERATIONS,
-                        executing,
-                            queue_context
-                              );
-
- return status;
- */
 }
 
 /** obtain semaphore function */
@@ -323,8 +253,8 @@ RTEMS_INLINE_ROUTINE Status_Control _MPCP_Seize(
   Thread_Control *owner;
   _MPCP_Acquire_critical( mpcp, queue_context );
   owner = _MPCP_Get_owner( mpcp );
-  
-  if ( owner == NULL ) {
+  executing->boost=1;
+    if ( owner == NULL ) {
 /** function set the new owner to the resource */ 
      status = _MPCP_Claim_ownership( mpcp, executing, queue_context );
 
@@ -351,7 +281,8 @@ RTEMS_INLINE_ROUTINE Status_Control _MPCP_Surrender(
 )
 {
    Thread_queue_Heads *heads;
-     if ( _MPCP_Get_owner( mpcp ) != executing ) {
+ executing->boost=0;
+   if ( _MPCP_Get_owner( mpcp ) != executing ) {
        _ISR_lock_ISR_enable( &queue_context->Lock_context.Lock_context );
       return STATUS_NOT_OWNER;
 }
@@ -379,13 +310,6 @@ _MPCP_Set_owner( mpcp, NULL );
    queue_context,
    MPCP_TQ_OPERATIONS
 );
-/**       _Thread_queue_Surrender_sticky(
-                                    &mpcp->Wait_queue.Queue,
-                                        heads,
-                                            executing,
-                                                queue_context,
-                                                    MPCP_TQ_OPERATIONS
-                                                     );*/
   return STATUS_SUCCESSFUL;
 }
 

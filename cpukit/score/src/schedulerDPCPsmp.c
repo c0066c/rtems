@@ -1,7 +1,7 @@
 #if HAVE_CONFIG_H
   #include "config.h"
 #endif
-#include <rtems/score/schedulerMPCPsmp.h>
+#include <rtems/score/schedulerDPCPsmp.h>
 #include <rtems/score/schedulerpriorityimpl.h>
 #include <rtems/score/schedulersmpimpl.h>
 #include <rtems/score/schedulerprioritysmpimpl.h>
@@ -24,7 +24,7 @@
  *             */
 
 
-void _Scheduler_MPCP_SMP_Node_initialize(
+void _Scheduler_DPCP_SMP_Node_initialize(
    const Scheduler_Control *scheduler,
          Scheduler_Node          *node,
          Thread_Control          *the_thread,
@@ -51,7 +51,7 @@ void _Scheduler_MPCP_SMP_Node_initialize(
            );
 } 
 
-static bool _Scheduler_MPCP_SMP_Insert_priority_lifo_order(
+static bool _Scheduler_DPCP_SMP_Insert_priority_lifo_order(
        const Chain_Node *to_insert,
        const Chain_Node *next
         )
@@ -60,7 +60,7 @@ static bool _Scheduler_MPCP_SMP_Insert_priority_lifo_order(
             && _Scheduler_SMP_Insert_priority_lifo_order( to_insert, next );
 }
 
-static bool _Scheduler_MPCP_SMP_Insert_priority_fifo_order(
+static bool _Scheduler_DPCP_SMP_Insert_priority_fifo_order(
         const Chain_Node *to_insert,
         const Chain_Node *next
         )
@@ -73,7 +73,7 @@ static bool _Scheduler_MPCP_SMP_Insert_priority_fifo_order(
  *  * This method returns the scheduler node for the specified thread
  *   * as a scheduler specific type.
  *    */
-static  Scheduler_Node *_Scheduler_MPCP_SMP_Get_highest_ready(
+static  Scheduler_Node *_Scheduler_DPCP_SMP_Get_highest_ready(
           Scheduler_Context *context,
             Scheduler_Node    *node
         )
@@ -88,7 +88,7 @@ static  Scheduler_Node *_Scheduler_MPCP_SMP_Get_highest_ready(
 }
 
 /** This method blocks the thread */            
-void _Scheduler_MPCP_SMP_Block(
+void _Scheduler_DPCP_SMP_Block(
       const Scheduler_Control *scheduler,
             Thread_Control          *thread,
             Scheduler_Node          *node
@@ -100,21 +100,21 @@ void _Scheduler_MPCP_SMP_Block(
          thread,
          node,
         _Scheduler_priority_SMP_Extract_from_ready,
-        _Scheduler_MPCP_SMP_Get_highest_ready,
+        _Scheduler_DPCP_SMP_Get_highest_ready,
         _Scheduler_priority_SMP_Move_from_ready_to_scheduled,
        _Scheduler_SMP_Allocate_processor_lazy
            );
                 
           }
- static bool _Scheduler_MPCP_SMP_Enqueue_fifo(
+ static bool _Scheduler_DPCP_SMP_Enqueue_fifo(
             Scheduler_Context *context,
            Scheduler_Node    *node
        )
   {
-  return _Scheduler_SMP_Enqueue_ordered_MPCP(
+  return _Scheduler_SMP_Enqueue_ordered(
          context,
          node,
-        _Scheduler_MPCP_SMP_Insert_priority_fifo_order,
+        _Scheduler_DPCP_SMP_Insert_priority_fifo_order,
       _Scheduler_priority_SMP_Insert_ready_fifo,
       _Scheduler_SMP_Insert_scheduled_fifo,
       _Scheduler_priority_SMP_Move_from_scheduled_to_ready,
@@ -124,7 +124,7 @@ void _Scheduler_MPCP_SMP_Block(
       }
 
 /** this method unblock the corresponding thread*/                
-void _Scheduler_MPCP_SMP_Unblock(
+void _Scheduler_DPCP_SMP_Unblock(
    const Scheduler_Control *scheduler,
          Thread_Control          *thread,
         Scheduler_Node          *node
@@ -137,11 +137,11 @@ void _Scheduler_MPCP_SMP_Unblock(
                         thread,
                         node,
                        _Scheduler_priority_SMP_Do_update,
-                       _Scheduler_MPCP_SMP_Enqueue_fifo
+                       _Scheduler_DPCP_SMP_Enqueue_fifo
                         );
                     }
 
-static bool _Scheduler_MPCP_SMP_Enqueue_ordered(
+static bool _Scheduler_DPCP_SMP_Enqueue_ordered(
           Scheduler_Context     *context,
           Scheduler_Node        *node,
           Chain_Node_order       order,
@@ -149,7 +149,7 @@ static bool _Scheduler_MPCP_SMP_Enqueue_ordered(
           Scheduler_SMP_Insert   insert_scheduled
       )
          {
-   return _Scheduler_SMP_Enqueue_ordered_MPCP(
+   return _Scheduler_SMP_Enqueue_ordered(
           context,
           node,
           order,
@@ -161,21 +161,21 @@ static bool _Scheduler_MPCP_SMP_Enqueue_ordered(
       );
            }
 
-static bool _Scheduler_MPCP_SMP_Enqueue_lifo(
+static bool _Scheduler_DPCP_SMP_Enqueue_lifo(
             Scheduler_Context *context,
             Scheduler_Node    *node
          )
    {
- return _Scheduler_MPCP_SMP_Enqueue_ordered(
+ return _Scheduler_DPCP_SMP_Enqueue_ordered(
         context,
         node,
-       _Scheduler_MPCP_SMP_Insert_priority_lifo_order,
+       _Scheduler_DPCP_SMP_Insert_priority_lifo_order,
        _Scheduler_priority_SMP_Insert_ready_lifo,
        _Scheduler_SMP_Insert_scheduled_lifo
                );
    }
 
-static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_ordered(
+static bool _Scheduler_DPCP_SMP_Enqueue_scheduled_ordered(
             Scheduler_Context    *context,
             Scheduler_Node       *node,
             Chain_Node_order      order,
@@ -189,7 +189,7 @@ static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_ordered(
               node,
               order,
               _Scheduler_priority_SMP_Extract_from_ready,
-              _Scheduler_MPCP_SMP_Get_highest_ready,
+              _Scheduler_DPCP_SMP_Get_highest_ready,
               insert_ready,
               insert_scheduled,
              _Scheduler_priority_SMP_Move_from_ready_to_scheduled,
@@ -197,11 +197,11 @@ static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_ordered(
                  );
                              }
 
- static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_lifo(
+ static bool _Scheduler_DPCP_SMP_Enqueue_scheduled_lifo(
          Scheduler_Context *context,
          Scheduler_Node    *node    )
     {
-    return _Scheduler_MPCP_SMP_Enqueue_scheduled_ordered(
+    return _Scheduler_DPCP_SMP_Enqueue_scheduled_ordered(
            context,
            node,
           _Scheduler_SMP_Insert_priority_lifo_order,
@@ -210,13 +210,13 @@ static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_ordered(
            );
                              }
 
-static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_fifo(
+static bool _Scheduler_DPCP_SMP_Enqueue_scheduled_fifo(
             Scheduler_Context *context,
            Scheduler_Node    *node
           
              )
                              {
-  return _Scheduler_MPCP_SMP_Enqueue_scheduled_ordered(
+  return _Scheduler_DPCP_SMP_Enqueue_scheduled_ordered(
          context,
          node,
         _Scheduler_SMP_Insert_priority_fifo_order,
@@ -224,7 +224,7 @@ static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_fifo(
         _Scheduler_SMP_Insert_scheduled_fifo
              );
                              }
- static bool _Scheduler_MPCP_SMP_Do_ask_for_help(
+ static bool _Scheduler_DPCP_SMP_Do_ask_for_help(
        Scheduler_Context *context,
        Thread_Control    *the_thread,
        Scheduler_Node    *node
@@ -243,7 +243,7 @@ static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_fifo(
 }
 
 /**this function updates a priority of the thread*/
- void _Scheduler_MPCP_SMP_Update_priority(
+ void _Scheduler_DPCP_SMP_Update_priority(
      const Scheduler_Control *scheduler,
      Thread_Control          *thread,
      Scheduler_Node          *node
@@ -256,15 +256,15 @@ static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_fifo(
   node,
   _Scheduler_priority_SMP_Extract_from_ready,
   _Scheduler_priority_SMP_Do_update,
-  _Scheduler_MPCP_SMP_Enqueue_fifo,
-  _Scheduler_MPCP_SMP_Enqueue_lifo,
-  _Scheduler_MPCP_SMP_Enqueue_scheduled_fifo,
-  _Scheduler_MPCP_SMP_Enqueue_scheduled_lifo,
- _Scheduler_MPCP_SMP_Do_ask_for_help
+  _Scheduler_DPCP_SMP_Enqueue_fifo,
+  _Scheduler_DPCP_SMP_Enqueue_lifo,
+  _Scheduler_DPCP_SMP_Enqueue_scheduled_fifo,
+  _Scheduler_DPCP_SMP_Enqueue_scheduled_lifo,
+ _Scheduler_DPCP_SMP_Do_ask_for_help
  );
 }
              
-  void _Scheduler_MPCP_SMP_Withdraw_node(
+  void _Scheduler_DPCP_SMP_Withdraw_node(
      const Scheduler_Control *scheduler,
      Thread_Control          *the_thread,
      Scheduler_Node          *node,
@@ -278,13 +278,13 @@ static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_fifo(
   node,
   next_state,
  _Scheduler_priority_SMP_Extract_from_ready,
- _Scheduler_MPCP_SMP_Get_highest_ready,
+ _Scheduler_DPCP_SMP_Get_highest_ready,
  _Scheduler_priority_SMP_Move_from_ready_to_scheduled,
  _Scheduler_SMP_Allocate_processor_lazy
                 );
                              }
 
-  void _Scheduler_MPCP_SMP_Add_processor(
+  void _Scheduler_DPCP_SMP_Add_processor(
      const Scheduler_Control *scheduler,
      Thread_Control          *idle
              )
@@ -294,11 +294,11 @@ static bool _Scheduler_MPCP_SMP_Enqueue_scheduled_fifo(
    context,
    idle,
   _Scheduler_priority_SMP_Has_ready,
- _Scheduler_MPCP_SMP_Enqueue_scheduled_fifo
+ _Scheduler_DPCP_SMP_Enqueue_scheduled_fifo
          );
           }
   
-Thread_Control *_Scheduler_MPCP_SMP_Remove_processor(
+Thread_Control *_Scheduler_DPCP_SMP_Remove_processor(
      const Scheduler_Control *scheduler,
      Per_CPU_Control         *cpu
           )
@@ -308,7 +308,7 @@ Thread_Control *_Scheduler_MPCP_SMP_Remove_processor(
           context,
           cpu,
           _Scheduler_priority_SMP_Extract_from_ready,
-         _Scheduler_MPCP_SMP_Enqueue_fifo
+         _Scheduler_DPCP_SMP_Enqueue_fifo
                );
             }
 

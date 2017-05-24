@@ -466,7 +466,12 @@ if HAS_SMP
 $(PROJECT_INCLUDE)/rtems/score/schedulerMPCPsmp.h: include/rtems/score/schedulerMPCPsmp.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerMPCPsmp.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerMPCPsmp.h
-  
+
+$(PROJECT_INCLUDE)/rtems/score/schedulerDPCPsmp.h: include/rtems/score/schedulerDPCPsmp.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
+    $(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerDPCPsmp.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerDPCPsmp.h
+     
+
 $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h: include/rtems/score/schedulerprioritysmpimpl.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h

@@ -135,6 +135,7 @@ if HAS_SMP
 include_rtems_score_HEADERS += include/rtems/score/schedulerprioritysmpimpl.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerpriorityaffinitysmp.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerMPCPsmp.h
+include_rtems_score_HEADERS += include/rtems/score/schedulerDPCPsmp.h
 include_rtems_score_HEADERS += include/rtems/score/schedulersimplesmp.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerstrongapa.h
 include_rtems_score_HEADERS += include/rtems/score/smplockmcs.h
@@ -160,6 +161,7 @@ libscore_a_SOURCES += src/schedulerpriorityaffinitysmp.c
 libscore_a_SOURCES += src/schedulerprioritysmp.c
 libscore_a_SOURCES += src/schedulersimplesmp.c
 libscore_a_SOURCES += src/schedulerstrongapa.c
+libscore_a_SOURCES += src/schedulerDPCPsmp.c
 libscore_a_SOURCES += src/schedulerMPCPsmp.c
 libscore_a_SOURCES += src/smp.c
 libscore_a_SOURCES += src/smplock.c

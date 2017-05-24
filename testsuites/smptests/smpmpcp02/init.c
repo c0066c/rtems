@@ -126,10 +126,11 @@ static void print_switch_events(test_context *ctx)
                     1,
   RTEMS_MULTIPROCESSOR_PRIORITY_CEILING
  /** RTEMS_PRIORITY_CEILING*/
- /** RTEMS_DISTRIBUTED_PRIORITY_CEILING*/
+ /** RTEMS_DISTRIBUTED_NO_PREEMPTIV*/
+/**RTEMS_DISTRIBUTED_PRIORITY_CEILING*/
  |RTEMS_PRIORITY | RTEMS_BINARY_SEMAPHORE,
  /**RTEMS_BINARY_SEMAPHORE
-       *      | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING,*/
+             | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING,*/
      prio,
      id
        );
@@ -651,44 +652,40 @@ static void test_overhead(test_context *ctx)
      );
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
     
-    sc = rtems_task_set_scheduler(ctx->high_task_id[12], ctx->scheduler_ids[1],6);
+   /** sc = rtems_task_set_scheduler(ctx->high_task_id[12], ctx->scheduler_ids[1],6);
     rtems_test_assert( sc == RTEMS_SUCCESSFUL);
-    
+   */
     sc = rtems_task_start(ctx->high_task_id[12],run_task, (rtems_task_argument) &run);
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
     
-    create_sema(ctx, &ctx->mpcp_ids[12],1 );
+    create_sema(ctx, &ctx->mpcp_ids[12],2 );
   
- /**   while (counter!=1000) {
+   /** while (counter!=1000) {
      if(gap>max){
         max=gap;
         printf("Overhead by obtain: %d\n", gap);
   } 
   start= rtems_clock_get_ticks_since_boot();
-    */  
+   */
   sc = rtems_semaphore_obtain(ctx->mpcp_ids[12], RTEMS_NO_WAIT, RTEMS_NO_TIMEOUT);
      if (sc == RTEMS_SUCCESSFUL)
          puts("OK ");
      else
    printf("Can't obtain semaphore: %s\n", rtems_status_text(sc));
-  /** end = rtems_clock_get_ticks_since_boot();
+ /** end = rtems_clock_get_ticks_since_boot();
             gap=(end-start);
- counter++;}*/
-         
-    rtems_test_assert(run);
+ counter++;}
+    */     
+    rtems_test_assert(!run);
     sc = rtems_task_wake_after(1);
     if (sc == RTEMS_SUCCESSFUL)
         puts("OK ");
     else
         printf("Can't sleep task: %s\n", rtems_status_text(sc));
- /**  end = rtems_clock_get_ticks_since_boot();
+    
+      rtems_test_assert(!run);
 
-      gap=(end-start);
-    */
-      rtems_test_assert(run);
-
-/**   start = rtems_clock_get_ticks_since_boot();
-  */
+  
       while (counter!=1000) {
         if(gap>max){
           max=gap;
@@ -703,13 +700,9 @@ end = rtems_clock_get_ticks_since_boot();
 gap = (end-start);
  counter++;
 }
- rtems_test_assert(run);
+ rtems_test_assert(!run);
  sc = rtems_task_wake_after(5);
 
- /** }
- /**end = rtems_clock_get_ticks_since_boot();
-
- gap=(end-start);*/
  
  rtems_cpu_usage_report();
 
@@ -865,11 +858,11 @@ static void Init(rtems_task_argument arg)
 
 
 /** test_mpcp_ceiling(ctx);*/
-/**test_mpcp_multiple_access(ctx);
-/**  test_mpcp_obtain_critical(ctx);*/
-/**test_mpcp_block_critical(ctx);*/
+/**test_mpcp_multiple_access(ctx);*/
+ /** test_mpcp_obtain_critical(ctx);*/
+test_mpcp_block_critical(ctx);
 /**test_mpcp_critical_semaphore(ctx);*/
-test_overhead(ctx);
+/**test_overhead(ctx);
 /**test_nested_obtain_error(ctx);
 */
  rtems_test_assert(rtems_resource_snapshot_check(&snapshot));
@@ -907,8 +900,8 @@ test_overhead(ctx);
   #define CONFIGURE_SMP_SCHEDULER_ASSIGNMENTS \ 
   RTEMS_SCHEDULER_ASSIGN(0, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_MANDATORY), \
       RTEMS_SCHEDULER_ASSIGN(1, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_OPTIONAL)
-*/
 
+*/
 #define CONFIGURE_SCHEDULER_PRIORITY_MPCP_SMP
  #include <rtems/scheduler.h>
  RTEMS_SCHEDULER_CONTEXT_MPCP_SMP(a,  CONFIGURE_MAXIMUM_PRIORITY + 1);

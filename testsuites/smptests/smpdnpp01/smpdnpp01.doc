@@ -1,0 +1,16 @@
+This file describes the directives and concepts tested by this test set.
+
+test set name: smpmpcp01
+
+directives:
+
+  - _MPCP_Initialize()
+  - _MPCP_Obtain()
+  - _MPCP_Release()
+  - _MPCP_Get_ceiling_priority()
+  - _MPCP_Set_ceiling_priority()
+
+concepts:
+
+
+

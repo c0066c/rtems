@@ -11,7 +11,7 @@
 #include <rtems/score/smplock.h>
 #define TESTS_USE_PRINTK
 #include "tmacros.h"
-const char rtems_test_name[] = "SMPDPCP 01";
+const char rtems_test_name[] = "SMPDNPP 1";
 #define CPU_COUNT 2
 #define SCHED_A rtems_build_name(' ', ' ', ' ', 'A')
 #define SCHED_B rtems_build_name(' ', ' ', ' ', 'B')
@@ -28,8 +28,8 @@ static void test_initially_locked_error(void)
   sc = rtems_semaphore_create(
        rtems_build_name('S', 'E', 'M', 'A'),
               0,
-       RTEMS_BINARY_SEMAPHORE | RTEMS_PRIORITY | RTEMS_DISTRIBUTED_PRIORITY_CEILING,
-/**   RTEMS_DISTRIBUTED_NO_PREEMPTIV,
+       RTEMS_BINARY_SEMAPHORE | RTEMS_PRIORITY |/** RTEMS_DISTRIBUTED_PRIORITY_CEILING,*/
+   RTEMS_DISTRIBUTED_NO_PREEMPTIV,
        /**    RTEMS_MULTIPROCESSOR_PRIORITY_CEILING,
        /**      RTEMS_MULTIPROCESSOR_RESOURCE_SHARING
                | RTEMS_BINARY_SEMAPHORE,
@@ -55,10 +55,10 @@ static void test_flush_error(void)
                     1,
    /**         RTEMS_MULTIPROCESSOR_RESOURCE_SHARING
                 | RTEMS_BINARY_SEMAPHORE,*/
-                   /**    RTEMS_BINARY_SEMAPHORE | RTEMS_PRIORITY | RTEMS_DISTRIBUTED_NO_PREEMPTIV,
+                       RTEMS_BINARY_SEMAPHORE | RTEMS_PRIORITY | RTEMS_DISTRIBUTED_NO_PREEMPTIV,
 
-                       /**RTEMS_MULTIPROCESSOR_PRIORITY_CEILING,      */
- RTEMS_BINARY_SEMAPHORE | RTEMS_PRIORITY | RTEMS_DISTRIBUTED_PRIORITY_CEILING,   
+                       /**RTEMS_MULTIPROCESSOR_PRIORITY_CEILING,      
+/** RTEMS_BINARY_SEMAPHORE | RTEMS_PRIORITY | RTEMS_DISTRIBUTED_PRIORITY_CEILING,*/               
                                1,
                                              &id
                                               );
@@ -117,7 +117,7 @@ static void Init(rtems_task_argument arg )
 
 #define CONFIGURE_MAXIMUM_TASKS 2
 /**#define CONFIGURE_MAXIMUM_SEMAPHORES 3*/
-#define CONFIGURE_MAXIMUM_MPCP_SEMAPHORES 5 
+#define CONFIGURE_MAXIMUM_DNPP_SEMAPHORES 5 
 
 
 #define CONFIGURE_SMP_MAXIMUM_PROCESSORS CPU_COUNT
