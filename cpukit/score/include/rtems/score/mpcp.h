@@ -13,18 +13,18 @@ extern "C" {
    *  *  MPCP control block.
    *   */
   typedef struct {
-      /**
-       **  The thread queue to manage ownership and waiting threads.
-       **/
-      Thread_queue_Control Wait_queue;
-        /**
-         * * The ceiling priority used by the owner thread.
-         **/
-      Priority_Node Ceiling_priority;
-          /**
-           **  One ceiling priority per scheduler instance.
-           **/
-      Priority_Control *ceiling_priorities;
+  /**
+   **  The thread queue to manage ownership and waiting threads.
+   **/
+   Thread_queue_Control Wait_queue;
+   /**
+    * * The ceiling priority used by the owner thread.
+    **/
+   Priority_Node Ceiling_priority;
+    /**
+     **  One ceiling priority per scheduler instance.
+    **/
+   Priority_Control *ceiling_priorities;
   } MPCP_Control;
 
   /** @} */

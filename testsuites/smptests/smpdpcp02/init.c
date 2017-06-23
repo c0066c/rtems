@@ -21,6 +21,7 @@ const char rtems_test_name[] = "SMPDPCP 02";
 #define SWITCH_EVENT_COUNT 32
 #define DPCP_COUNT 32
 #define CPU_COUNT 2 
+
 typedef struct {
     uint32_t cpu_index;
     const Thread_Control *executing;
@@ -28,6 +29,7 @@ typedef struct {
     const Thread_Control *heir_node;
    Priority_Control heir_priority;
 } switch_event;
+
 typedef struct {
     rtems_id run_task_id;
     rtems_id mpcp_id;
@@ -40,9 +42,11 @@ typedef struct {
     size_t switch_index;   
     switch_event switch_events[32];
   } test_context;
+
 static test_context test_instance = {
       .switch_lock = SMP_LOCK_INITIALIZER("test instance switch lock")
 };
+
 static void switch_extension(Thread_Control *executing, Thread_Control *heir)
 {
      test_context *ctx = &test_instance;
@@ -89,15 +93,15 @@ static void print_switch_events(test_context *ctx)
 {
     size_t n = get_switch_events(ctx);
     size_t i;
-    for (i = 0; i < n; ++i) {
+ for (i = 0; i < n; ++i) {
      switch_event *e = &ctx->switch_events[i];
      char ex[5];
      char hr[5];
      char hn[5];
 
-     rtems_object_get_name(e->executing->Object.id, sizeof(ex), &ex[0]);
-     rtems_object_get_name(e->heir->Object.id, sizeof(hr), &hr[0]);
-     rtems_object_get_name(e->heir_node->Object.id, sizeof(hn), &hn[0]);
+ rtems_object_get_name(e->executing->Object.id, sizeof(ex), &ex[0]);
+ rtems_object_get_name(e->heir->Object.id, sizeof(hr), &hr[0]);
+ rtems_object_get_name(e->heir_node->Object.id, sizeof(hn), &hn[0]);
 
 
      printf(
@@ -130,9 +134,9 @@ static void suspend_critical(rtems_task_argument arg)
    volatile bool *run_ = (volatile bool *) arg;
    *run_=true;
    rtems_status_code sc;
-/**rtems_task_wake_after(1);*/
+
    sc = rtems_semaphore_obtain(ctx->dpcp_ids[6], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 
    sc=rtems_task_wake_after(1);
    rtems_test_assert(sc == RTEMS_SUCCESSFUL);
@@ -143,9 +147,7 @@ static void suspend_critical(rtems_task_argument arg)
    while (true){
 }
 }
-
-            
-
+          
 static void block_first(rtems_task_argument arg)
 {
     test_context *ctx = &test_instance;
@@ -178,7 +180,6 @@ static void block_second(rtems_task_argument arg)
           rtems_task_wake_after(1);
 
     sc=rtems_semaphore_release(ctx->dpcp_ids[8]);
-/**   rtems_task_wake_after(1);*/
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
     while (true) {
          }
@@ -218,7 +219,6 @@ static  void create_sema(
             &old_prio
           );
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-/**    rtems_test_assert(old_prio == 0);*/
         }
 }
 
@@ -270,29 +270,23 @@ static void test_critical(test_context *ctx)
 
   sc = rtems_semaphore_release(ctx->dpcp_ids[7]);
   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-       /**       
-    rtems_test_assert(!run);               
-rtems_task_wake_after(1);
-*/
-print_switch_events(ctx);
-    
-    sc = rtems_semaphore_delete(ctx->dpcp_ids[7]);
-     sc= rtems_semaphore_delete(ctx->dpcp_ids[8]);
      
-     sc= rtems_task_delete(ctx->high_task_id[5]);
-  
-     sc = rtems_task_delete(ctx->low_task_id[5]);
-
+  print_switch_events(ctx);
+    
+  sc = rtems_semaphore_delete(ctx->dpcp_ids[7]);
+  sc= rtems_semaphore_delete(ctx->dpcp_ids[8]);
+  sc= rtems_task_delete(ctx->high_task_id[5]);
+  sc = rtems_task_delete(ctx->low_task_id[5]);
     }
 
  static void test_normal(test_context *ctx)
  {
    rtems_status_code sc;
    reset_switch_events(ctx);
-    volatile bool run = false;
+   volatile bool run = false;
    rtems_task_priority prio;
    puts("test DPCP normal");
- sc = rtems_task_create(
+   sc = rtems_task_create(
           rtems_build_name(' ', 'L', 'O', 'W'),
                                 5,
           RTEMS_MINIMUM_STACK_SIZE,
@@ -300,7 +294,8 @@ print_switch_events(ctx);
           RTEMS_DEFAULT_ATTRIBUTES,
           &ctx->low_task_id[6]
              );
-     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+
+   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
      sc = rtems_task_create(
        rtems_build_name('H', 'I', 'G', 'H'),
                          4,
@@ -312,33 +307,38 @@ print_switch_events(ctx);
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 
    create_sema(ctx, &ctx->dpcp_ids[6],2 );
+   
    sc= rtems_task_start(ctx->high_task_id[6],run_task,(rtems_task_argument) &run);
-      rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-    sc = rtems_task_start(ctx->low_task_id[6],suspend_critical,(rtems_task_argument) &run);
-         rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+   
+   sc = rtems_task_start(ctx->low_task_id[6],suspend_critical,(rtems_task_argument) &run);
+   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 
-        rtems_test_assert(!run);
-     sc = rtems_task_wake_after(2);
-    rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-       
-          sc = rtems_semaphore_obtain(ctx->dpcp_ids[6], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-     rtems_task_wake_after(5);
-    sc = rtems_semaphore_release(ctx->dpcp_ids[6]);
-    rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+   rtems_test_assert(!run);
+   sc = rtems_task_wake_after(2);
+   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+   
+   sc = rtems_semaphore_obtain(ctx->dpcp_ids[6], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+   
+   rtems_task_wake_after(5);
+   
+   sc = rtems_semaphore_release(ctx->dpcp_ids[6]);
+   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 
     rtems_test_assert(run);
     rtems_task_wake_after(10);
    
-     print_switch_events(ctx);
+    print_switch_events(ctx);
+
     sc = rtems_semaphore_delete(ctx->dpcp_ids[6]);
-     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+    rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+   
+    sc = rtems_task_delete(ctx->high_task_id[6]);
+    rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 
-   sc = rtems_task_delete(ctx->high_task_id[6]);
-     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-
-   sc = rtems_task_delete(ctx->low_task_id[6]);
-     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+    sc = rtems_task_delete(ctx->low_task_id[6]);
+    rtems_test_assert(sc == RTEMS_SUCCESSFUL);
  }
 
 static void test_dpcp_nested_obtain_error(test_context *ctx)
@@ -369,23 +369,24 @@ static void Init(rtems_task_argument arg)
   rtems_status_code sc;
   uint32_t cpu_index;
   rtems_resource_snapshot snapshot;
-   TEST_BEGIN();
+ 
+  TEST_BEGIN();
   uint32_t cpu_count = rtems_get_processor_count();
   printf ("CPU count in your system: %d\n", cpu_count);
   ctx->main_task_id = rtems_task_self();
   uint32_t tick_per_second = rtems_clock_get_ticks_per_second();
    printf( "\nTicks per second in your system: %" PRIu32 "\n", tick_per_second );
   rtems_resource_snapshot_take(&snapshot);
- sc = rtems_scheduler_ident(SCHED_A,&ctx->scheduler_ids[0]);
+
+  sc = rtems_scheduler_ident(SCHED_A,&ctx->scheduler_ids[0]);
  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
  
  sc = rtems_scheduler_ident(SCHED_B,&ctx->scheduler_ids[1]);
  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-/**test_normal(ctx);*/
-test_critical(ctx);
-
-/**test_dpcp_nested_obtain_error(ctx);*/
-rtems_test_assert(rtems_resource_snapshot_check(&snapshot));
+ /**test_normal(ctx);*/
+ test_critical(ctx);
+ /**test_dpcp_nested_obtain_error(ctx);*/
+ rtems_test_assert(rtems_resource_snapshot_check(&snapshot));
   TEST_END();
  rtems_test_exit(0);
 }
@@ -430,18 +431,16 @@ RTEMS_SCHEDULER_CONTEXT_MPCP_SMP(b, CONFIGURE_MAXIMUM_PRIORITY+1);
     RTEMS_SCHEDULER_ASSIGN(1, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_OPTIONAL) 
  */
 #define CONFIGURE_SCHEDULER_PRIORITY_DPCP_SMP
-  #include <rtems/scheduler.h>
- RTEMS_SCHEDULER_CONTEXT_DPCP_SMP(a, CONFIGURE_MAXIMUM_PRIORITY+1);
-  RTEMS_SCHEDULER_CONTEXT_DPCP_SMP(b, CONFIGURE_MAXIMUM_PRIORITY+1);
-    #define CONFIGURE_SCHEDULER_CONTROLS \
-            RTEMS_SCHEDULER_CONTROL_DPCP_SMP(a, SCHED_A),\
-        RTEMS_SCHEDULER_CONTROL_DPCP_SMP(b, SCHED_B)
-    #define CONFIGURE_SMP_SCHEDULER_ASSIGNMENTS \
-           RTEMS_SCHEDULER_ASSIGN(0, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_MANDATORY),\
-       RTEMS_SCHEDULER_ASSIGN(1, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_OPTIONAL)
+#include <rtems/scheduler.h>
 
-
-
+RTEMS_SCHEDULER_CONTEXT_DPCP_SMP(a, CONFIGURE_MAXIMUM_PRIORITY+1);
+RTEMS_SCHEDULER_CONTEXT_DPCP_SMP(b, CONFIGURE_MAXIMUM_PRIORITY+1);
+ #define CONFIGURE_SCHEDULER_CONTROLS \
+    RTEMS_SCHEDULER_CONTROL_DPCP_SMP(a, SCHED_A),\
+    RTEMS_SCHEDULER_CONTROL_DPCP_SMP(b, SCHED_B)
+ #define CONFIGURE_SMP_SCHEDULER_ASSIGNMENTS \
+     RTEMS_SCHEDULER_ASSIGN(0, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_MANDATORY),\
+     RTEMS_SCHEDULER_ASSIGN(1, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_OPTIONAL)
 /**
 #define CONFIGURE_SCHEDULER_SIMPLE_SMP
 

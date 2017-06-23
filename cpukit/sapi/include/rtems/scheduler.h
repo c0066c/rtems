@@ -147,45 +147,42 @@
 
      #define RTEMS_SCHEDULER_CONTEXT_MPCP_SMP( name, prio_count ) \
            static struct { \
-                      Scheduler_priority_SMP_Context Base; \
-                      Chain_Control                  Ready[ ( prio_count ) ]; \
-                    } RTEMS_SCHEDULER_CONTEXT_MPCP_SMP_NAME( name )
+                Scheduler_priority_SMP_Context Base; \
+                Chain_Control                  Ready[ ( prio_count ) ]; \
+                } RTEMS_SCHEDULER_CONTEXT_MPCP_SMP_NAME( name )
 
      #define RTEMS_SCHEDULER_CONTROL_MPCP_SMP( name, obj_name ) \
            { \
-                      &RTEMS_SCHEDULER_CONTEXT_MPCP_SMP_NAME( name ).Base.Base.Base, \
-                      SCHEDULER_MPCP_SMP_ENTRY_POINTS, \
-                      RTEMS_ARRAY_SIZE( \
-                                       RTEMS_SCHEDULER_CONTEXT_MPCP_SMP_NAME( name ).Ready \
-                                     ) - 1, \
-                      ( obj_name ) \
+               &RTEMS_SCHEDULER_CONTEXT_MPCP_SMP_NAME( name ).Base.Base.Base, \
+               SCHEDULER_MPCP_SMP_ENTRY_POINTS, \
+               RTEMS_ARRAY_SIZE( \
+               RTEMS_SCHEDULER_CONTEXT_MPCP_SMP_NAME( name ).Ready \
+               ) - 1, \
+             ( obj_name ) \
                     }
    #endif
   #ifdef CONFIGURE_SCHEDULER_PRIORITY_DPCP_SMP
         #include <rtems/score/schedulerDPCPsmp.h>
 
         #define RTEMS_SCHEDULER_CONTEXT_DPCP_SMP_NAME( name ) \
-                  RTEMS_SCHEDULER_CONTEXT_NAME( DPCP_SMP_ ## name )
+           RTEMS_SCHEDULER_CONTEXT_NAME( DPCP_SMP_ ## name )
 
         #define RTEMS_SCHEDULER_CONTEXT_DPCP_SMP( name, prio_count ) \
                   static struct { \
-                                             Scheduler_priority_SMP_Context Base; \
-                                             Chain_Control                  Ready[ ( prio_count ) ]; \
-                                           } RTEMS_SCHEDULER_CONTEXT_DPCP_SMP_NAME( name )
+                      Scheduler_priority_SMP_Context Base; \
+                      Chain_Control                  Ready[ ( prio_count ) ]; \
+                      } RTEMS_SCHEDULER_CONTEXT_DPCP_SMP_NAME( name )
 
         #define RTEMS_SCHEDULER_CONTROL_DPCP_SMP( name, obj_name ) \
                   { \
-                                             &RTEMS_SCHEDULER_CONTEXT_DPCP_SMP_NAME( name ).Base.Base.Base, \
-                                             SCHEDULER_DPCP_SMP_ENTRY_POINTS, \
-                                             RTEMS_ARRAY_SIZE( \
-                                                                                             RTEMS_SCHEDULER_CONTEXT_DPCP_SMP_NAME( name ).Ready \
-                                                                                           ) - 1, \
-                                             ( obj_name ) \
-                                           }
+                      &RTEMS_SCHEDULER_CONTEXT_DPCP_SMP_NAME( name ).Base.Base.Base, \
+                      SCHEDULER_DPCP_SMP_ENTRY_POINTS, \
+                      RTEMS_ARRAY_SIZE( \
+                      RTEMS_SCHEDULER_CONTEXT_DPCP_SMP_NAME( name ).Ready \
+                       ) - 1, \
+                      ( obj_name ) \
+                         }
       #endif
-
-
-
 
 #ifdef CONFIGURE_SCHEDULER_PRIORITY_SMP
   #include <rtems/score/schedulerprioritysmp.h>

@@ -18,6 +18,7 @@ const char rtems_test_name[] = "SMPMPCP 1";
 
 static rtems_id scheduler_a;
 static rtems_id scheduler_b;
+
 // initially locked error test: the creating of the semaphore with the count 0 is forbidden for MPCP */ 
 static void test_initially_locked_error(void)
 {
@@ -38,7 +39,7 @@ static void test_initially_locked_error(void)
     if (sc == RTEMS_INVALID_NUMBER)
         puts("OK ");
     else
-         printf("Can create initially locked semaphore: %s\n", rtems_status_text(sc));
+        printf("Can create initially locked semaphore: %s\n", rtems_status_text(sc));
 }
 
 /** rtems_semaphore_flush directive(unblocking all tasks waiting for the same resource) is forbidden for MPCP*/ 
@@ -68,15 +69,15 @@ static void test_flush_error(void)
           prio,
           &prio
                 );
-   if (sc == RTEMS_SUCCESSFUL)
+ if (sc == RTEMS_SUCCESSFUL)
      puts("OK ");
-   else
+ else
      printf("Can't set priority semaphore: %s\n", rtems_status_text(sc));    
   rtems_test_assert(sc == RTEMS_SUCCESSFUL);
   sc = rtems_semaphore_flush( id);
-   if (sc == RTEMS_NOT_DEFINED)
+ if (sc == RTEMS_NOT_DEFINED)
       puts("OK ");
-   else
+ else
     printf("Can't flush semaphore: %s\n", rtems_status_text(sc));
 
   sc = rtems_semaphore_delete( id);
@@ -113,7 +114,6 @@ static void Init(rtems_task_argument arg )
 #define CONFIGURE_APPLICATION_NEEDS_CONSOLE_DRIVER
 
 #define CONFIGURE_MAXIMUM_TASKS 2
-/**#define CONFIGURE_MAXIMUM_SEMAPHORES 3*/
 #define CONFIGURE_MAXIMUM_MPCP_SEMAPHORES 5 
 
 

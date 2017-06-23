@@ -43,6 +43,7 @@ typedef struct {
 static test_context test_instance = {
       .switch_lock = SMP_LOCK_INITIALIZER("test instance switch lock")
 };
+
 static void switch_extension(Thread_Control *executing, Thread_Control *heir)
 {
      test_context *ctx = &test_instance;
@@ -79,7 +80,7 @@ static size_t get_switch_events(test_context *ctx)
    size_t events;
  
    _SMP_lock_ISR_disable_and_acquire(&ctx->switch_lock, &lock_context);
-   events = ctx->switch_index;
+    events = ctx->switch_index;
    _SMP_lock_Release_and_ISR_enable(&ctx->switch_lock, &lock_context);
    
    return events;
@@ -124,42 +125,43 @@ static void print_switch_events(test_context *ctx)
                     }
     }
 
- static void block_first(rtems_task_argument arg)
-{
+  static void block_first(rtems_task_argument arg)
+   {
     test_context *ctx = &test_instance;
     volatile bool *run_ = (volatile bool *) arg;
     *run_=true;
     rtems_status_code sc;
 
-    sc=rtems_task_wake_after(5);
+    sc=rtems_task_wake_after(2);
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 
     sc = rtems_semaphore_obtain(ctx->dnpp_ids[7], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-    sc = rtems_task_wake_after(3);
+
+    sc = rtems_task_wake_after(10);
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 
     sc=rtems_semaphore_release(ctx->dnpp_ids[7]);
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-    while (true) {
-              }
-    }
+     while (true) {
+                    }
+   }
 
  static void block_second(rtems_task_argument arg)
-  {
+     {
      test_context *ctx = &test_instance;
      volatile bool *run_ = (volatile bool *) arg;
      *run_=true;
      rtems_status_code sc;
-     /** rtems_task_wake_after(1);       */
+     rtems_task_wake_after(1);
+     
      sc = rtems_semaphore_obtain(ctx->dnpp_ids[8], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
      rtems_task_wake_after(1);
 
-     sc=rtems_semaphore_release(ctx->dnpp_ids[8]);
+    sc=rtems_semaphore_release(ctx->dnpp_ids[8]);
      rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-     while (true) {
-                  }
-            }
-
+       while (true) {
+                      }
+   }
 
 static  void create_sema(
        test_context *ctx,
@@ -335,7 +337,7 @@ static void test_flush_error(test_context *ctx)
   printf("Can't flush semaphore: %s\n", rtems_status_text(sc));
  sc = rtems_semaphore_delete( id);
  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
-       }
+ }
 
 static void Init(rtems_task_argument arg)
 {
@@ -343,7 +345,8 @@ static void Init(rtems_task_argument arg)
   rtems_status_code sc;
   uint32_t cpu_index;
   rtems_resource_snapshot snapshot;
-   TEST_BEGIN();
+
+  TEST_BEGIN();
   uint32_t cpu_count = rtems_get_processor_count();
   printf ("CPU count in your system: %d\n", cpu_count);
   ctx->main_task_id = rtems_task_self();
@@ -351,15 +354,15 @@ static void Init(rtems_task_argument arg)
    printf( "\nTicks per second in your system: %" PRIu32 "\n", tick_per_second );
   rtems_resource_snapshot_take(&snapshot);
 
- sc = rtems_scheduler_ident(SCHED_A,&ctx->scheduler_ids[0]);
- rtems_test_assert(sc == RTEMS_SUCCESSFUL);
+  sc = rtems_scheduler_ident(SCHED_A,&ctx->scheduler_ids[0]);
+  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
  
  sc = rtems_scheduler_ident(SCHED_B,&ctx->scheduler_ids[1]);
  rtems_test_assert(sc == RTEMS_SUCCESSFUL);
 
  test_critical(ctx);
-/**test_dnpp_nested_obtain_error(ctx);*/
-rtems_test_assert(rtems_resource_snapshot_check(&snapshot));
+ /**test_dnpp_nested_obtain_error(ctx);*/
+ rtems_test_assert(rtems_resource_snapshot_check(&snapshot));
   TEST_END();
  rtems_test_exit(0);
 }
@@ -391,6 +394,7 @@ rtems_test_assert(rtems_resource_snapshot_check(&snapshot));
   RTEMS_SCHEDULER_ASSIGN(0, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_MANDATORY), \
   RTEMS_SCHEDULER_ASSIGN(1, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_OPTIONAL)
 */
+/**
 #define CONFIGURE_SCHEDULER_PRIORITY_MPCP_SMP
  #include <rtems/scheduler.h>
 RTEMS_SCHEDULER_CONTEXT_MPCP_SMP(a, 256);
@@ -401,7 +405,18 @@ RTEMS_SCHEDULER_CONTEXT_MPCP_SMP(b, 256);
  #define CONFIGURE_SMP_SCHEDULER_ASSIGNMENTS \
     RTEMS_SCHEDULER_ASSIGN(0, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_MANDATORY),\
     RTEMS_SCHEDULER_ASSIGN(1, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_OPTIONAL) 
- 
+*/
+ #define CONFIGURE_SCHEDULER_PRIORITY_DPCP_SMP
+  #include <rtems/scheduler.h>
+ RTEMS_SCHEDULER_CONTEXT_DPCP_SMP(a, 256);
+ RTEMS_SCHEDULER_CONTEXT_DPCP_SMP(b, 256);
+  #define CONFIGURE_SCHEDULER_CONTROLS \
+     RTEMS_SCHEDULER_CONTROL_DPCP_SMP(a, SCHED_A),\
+     RTEMS_SCHEDULER_CONTROL_DPCP_SMP(b, SCHED_B)
+   #define CONFIGURE_SMP_SCHEDULER_ASSIGNMENTS \
+      RTEMS_SCHEDULER_ASSIGN(0, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_MANDATORY),\
+      RTEMS_SCHEDULER_ASSIGN(1, RTEMS_SCHEDULER_ASSIGN_PROCESSOR_OPTIONAL)
+
 /**
 #define CONFIGURE_SCHEDULER_SIMPLE_SMP
 

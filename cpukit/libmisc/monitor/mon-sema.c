@@ -55,19 +55,19 @@ rtems_monitor_sema_canonical(
           | RTEMS_MULTIPROCESSOR_RESOURCE_SHARING;
         break;
       case SEMAPHORE_VARIANT_MPCP:
-                 canonical_sema->attribute |= RTEMS_BINARY_SEMAPHORE
-                              | RTEMS_PRIORITY | RTEMS_MULTIPROCESSOR_PRIORITY_CEILING;
-                          break;
+         canonical_sema->attribute |= RTEMS_BINARY_SEMAPHORE
+          | RTEMS_PRIORITY | RTEMS_MULTIPROCESSOR_PRIORITY_CEILING;
+        break;
       case SEMAPHORE_VARIANT_DPCP:
-                                   canonical_sema->attribute |= RTEMS_BINARY_SEMAPHORE|RTEMS_PRIORITY|RTEMS_DISTRIBUTED_PRIORITY_CEILING  
-                                                ;
-                                            break;
+         canonical_sema->attribute |= RTEMS_BINARY_SEMAPHORE|RTEMS_PRIORITY|RTEMS_DISTRIBUTED_PRIORITY_CEILING  
+          ;
+         break;
       case SEMAPHORE_VARIANT_DNPP:
-                                                     canonical_sema->attribute |= RTEMS_BINARY_SEMAPHORE
-                                                                   | RTEMS_PRIORITY|RTEMS_DISTRIBUTED_NO_PREEMPTIV ;
-                                                              break;
+         canonical_sema->attribute |= RTEMS_BINARY_SEMAPHORE
+         | RTEMS_PRIORITY|RTEMS_DISTRIBUTED_NO_PREEMPTIV ;
+        break;
 #endif
-      case SEMAPHORE_VARIANT_SIMPLE_BINARY:
+       case SEMAPHORE_VARIANT_SIMPLE_BINARY:
         canonical_sema->attribute |= RTEMS_SIMPLE_BINARY_SEMAPHORE;
         break;
       case SEMAPHORE_VARIANT_COUNTING:

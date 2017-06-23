@@ -48,10 +48,10 @@ static void test_flush_error(void)
   rtems_status_code sc;
   rtems_id id;
   rtems_task_priority prio;
-  puts("test DPCP flush error");
+  puts("test DNPP flush error");
   
   sc = rtems_semaphore_create(
-       rtems_build_name('M', 'P', 'C', 'P'),
+       rtems_build_name('D', 'N', 'P', 'P'),
                     1,
    /**         RTEMS_MULTIPROCESSOR_RESOURCE_SHARING
                 | RTEMS_BINARY_SEMAPHORE,*/

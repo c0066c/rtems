@@ -283,11 +283,6 @@ static void block_first(rtems_task_argument arg)
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
     
     sc = rtems_semaphore_obtain(ctx->mpcp_ids[7], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-    /**  if (sc == RTEMS_SUCCESSFUL)
-            puts("OK ");
-      else
-            printf("Can't obtain semaphore: %s\n", rtems_status_text(sc));
-   */
     sc = rtems_task_wake_after(5);
     rtems_test_assert(sc == RTEMS_SUCCESSFUL);
     
@@ -305,11 +300,6 @@ static void block_second(rtems_task_argument arg)
     rtems_status_code sc;
                           
     sc = rtems_semaphore_obtain(ctx->mpcp_ids[8], RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-   /**  if (sc == RTEMS_SUCCESSFUL)
-         puts("OK ");
-     else
-        printf("Can't obtain semaphore: %s\n", rtems_status_text(sc));
-*/
     rtems_task_wake_after(1);
    
     sc=rtems_semaphore_release(ctx->mpcp_ids[8]);
@@ -629,7 +619,7 @@ static void test_mpcp_obtain_critical(test_context *ctx)
     sc = rtems_task_delete(ctx->low_task_id[6]);
     rtems_test_assert (sc== RTEMS_SUCCESSFUL);
                           }
-/** still in progress:test function to measure overhead */
+/**test function to measure overhead */
 static void test_overhead(test_context *ctx)
 {
     volatile bool run = false;

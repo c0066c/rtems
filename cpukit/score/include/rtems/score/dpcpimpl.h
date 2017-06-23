@@ -22,8 +22,6 @@ extern "C" {
      *    * @{
      *     */
 #define DPCP_TQ_OPERATIONS &_Thread_queue_Operations_priority
-
-
      
 RTEMS_INLINE_ROUTINE void _DPCP_Acquire_critical(
    DPCP_Control         *dpcp,
@@ -65,7 +63,7 @@ RTEMS_INLINE_ROUTINE Priority_Control _DPCP_Get_priority(
   scheduler_index = _Scheduler_Get_index( scheduler );
  return dpcp->ceiling_priorities[ scheduler_index ];
 }
-
+/**migrations mechanism for DPCP*/
  RTEMS_INLINE_ROUTINE void _DPCP_Migrate(
      Thread_Control       *executing,
     Per_CPU_Control         *cpu
@@ -73,6 +71,7 @@ RTEMS_INLINE_ROUTINE Priority_Control _DPCP_Get_priority(
  {       
  _Thread_Set_CPU(executing,cpu);
 }
+
 RTEMS_INLINE_ROUTINE void _DPCP_Set_priority(
   DPCP_Control            *dpcp,
   const Scheduler_Control *scheduler,
@@ -101,8 +100,7 @@ RTEMS_INLINE_ROUTINE void _DPCP_Replace_priority(
   _Thread_Wait_release_default( thread, &lock_context );
 }
 
-
-
+/**increase priority to ceiling*/
 RTEMS_INLINE_ROUTINE Status_Control _DPCP_Raise_priority(
   DPCP_Control         *dpcp,
   Thread_Control       *thread,
@@ -148,6 +146,7 @@ RTEMS_INLINE_ROUTINE void _DPCP_Remove_priority(
   _Thread_Wait_release_default_critical( thread, &lock_context );
 }
 
+/**set new owner of resource*/
 RTEMS_INLINE_ROUTINE Status_Control _DPCP_Set_new(
   DPCP_Control         *dpcp,
   Thread_Control       *executing,
@@ -175,7 +174,7 @@ RTEMS_INLINE_ROUTINE Status_Control _DPCP_Set_new(
   _Thread_Dispatch_enable( cpu_self );
   return STATUS_SUCCESSFUL;
     }
-
+/**create semaohore */
 RTEMS_INLINE_ROUTINE Status_Control _DPCP_Initialize(
  DPCP_Control            *dpcp,
  const Scheduler_Control *scheduler,
@@ -248,7 +247,7 @@ _Thread_queue_Enqueue(
  );
 return _Thread_Wait_get_status( executing );
 }
-
+/**obtain semaphore function*/
 RTEMS_INLINE_ROUTINE Status_Control _DPCP_Seize(
   DPCP_Control         *dpcp,
   Thread_Control       *executing,
@@ -256,7 +255,7 @@ RTEMS_INLINE_ROUTINE Status_Control _DPCP_Seize(
  Thread_queue_Context *queue_context
 )
 {
-   const Scheduler_Control *scheduler;
+ const Scheduler_Control *scheduler;
  Status_Control  status;
  Thread_Control *owner;
   Scheduler_Node          *scheduler_node;
@@ -264,15 +263,14 @@ RTEMS_INLINE_ROUTINE Status_Control _DPCP_Seize(
  _DPCP_Acquire_critical(dpcp, queue_context );
     owner = _DPCP_Get_owner(dpcp);
     if ( owner == NULL ){
-        status = _DPCP_Set_new( dpcp, executing, queue_context );
+     status = _DPCP_Set_new( dpcp, executing, queue_context );
     _DPCP_Migrate(executing, cpu_semaphore);
-    
     }
    else if (owner == executing){
     _DPCP_Release (dpcp, queue_context);
     status = STATUS_UNAVAILABLE;
 }
-   else if ( wait ) {
+  else if ( wait ) {
  status = _DPCP_Wait(dpcp,executing,DPCP_TQ_OPERATIONS,queue_context);
   _DPCP_Migrate(executing,cpu_semaphore);  
 
@@ -282,13 +280,13 @@ RTEMS_INLINE_ROUTINE Status_Control _DPCP_Seize(
 }
 return status;
 }
-
+/**release semaphore function*/
  RTEMS_INLINE_ROUTINE Status_Control _DPCP_Surrender(
-                       DPCP_Control         *dpcp,
-                Thread_Control       *executing,
-                  Thread_queue_Context *queue_context
-            )
- {
+    DPCP_Control         *dpcp,
+    Thread_Control       *executing,
+    Thread_queue_Context *queue_context
+)
+{
    Thread_queue_Heads *heads;
    const Scheduler_Control *scheduler;
    Priority_Control         core_priority;
@@ -300,31 +298,30 @@ if ( _DPCP_Get_owner( dpcp ) != executing ) {
         _ISR_lock_ISR_enable( &queue_context->Lock_context.Lock_context );
        return STATUS_NOT_OWNER;
 }
-  _DPCP_Acquire_critical( dpcp, queue_context );
-  _DPCP_Set_owner( dpcp, NULL );
-  _DPCP_Remove_priority( executing, &dpcp->Ceiling_priority, queue_context );
-   heads = dpcp->Wait_queue.Queue.heads;
-_DPCP_Migrate(executing,cpu);
+ _DPCP_Acquire_critical( dpcp, queue_context );
+ _DPCP_Set_owner( dpcp, NULL );
+ _DPCP_Remove_priority( executing, &dpcp->Ceiling_priority, queue_context );
+ heads = dpcp->Wait_queue.Queue.heads;
+
+ _DPCP_Migrate(executing,cpu);
   if ( heads == NULL ) 
 {
- Per_CPU_Control *cpu_self;
-
- cpu_self = _Thread_Dispatch_disable_critical(
+Per_CPU_Control *cpu_self;
+cpu_self = _Thread_Dispatch_disable_critical(
         &queue_context->Lock_context.Lock_context
               );
-   _DPCP_Release( dpcp, queue_context );
-   _Thread_Priority_and_sticky_update( executing, -1 );
-   _Thread_Dispatch_enable( cpu_self );
+ _DPCP_Release( dpcp, queue_context );
+ _Thread_Priority_and_sticky_update( executing, -1 );
+ _Thread_Dispatch_enable( cpu_self );
    return STATUS_SUCCESSFUL;
            }
-    _Thread_queue_Surrender(
+  _Thread_queue_Surrender(
        &dpcp->Wait_queue.Queue,
              heads,
              executing,
             queue_context,
             DPCP_TQ_OPERATIONS
              );
-
 return STATUS_SUCCESSFUL;
     }
 
@@ -335,7 +332,7 @@ RTEMS_INLINE_ROUTINE Status_Control _DPCP_Can_destroy( DPCP_Control *dpcp )
 }
  return STATUS_SUCCESSFUL;
 }
-
+/**delete semaphore */
 RTEMS_INLINE_ROUTINE void _DPCP_Destroy(
   DPCP_Control         *dpcp,
   Thread_queue_Context *queue_context

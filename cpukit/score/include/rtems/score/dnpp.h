@@ -27,8 +27,8 @@ Thread_queue_Control Wait_queue;
  @brief One ceiling priority per scheduler instance.
     */
 Priority_Control *ceiling_priorities;
-           
-    } DNPP_Control;
+         
+} DNPP_Control;
     /** @} */
 #ifdef __cplusplus
 }

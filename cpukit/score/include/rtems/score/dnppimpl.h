@@ -22,8 +22,6 @@ extern "C" {
      *    * @{
      *     */
 #define DNPP_TQ_OPERATIONS &_Thread_queue_Operations_priority
-
-
      
 RTEMS_INLINE_ROUTINE void _DNPP_Acquire_critical(
    DNPP_Control         *dnpp,
@@ -49,15 +47,15 @@ RTEMS_INLINE_ROUTINE Thread_Control *_DNPP_Get_owner(
 }
 
  RTEMS_INLINE_ROUTINE void _DNPP_Set_Ceiling (
-          DNPP_Control *dnpp ,
-           const Scheduler_Control *scheduler
-            )
-     {
-          uint32_t scheduler_index ;
+   DNPP_Control *dnpp ,
+   const Scheduler_Control *scheduler
+)
+{
+  uint32_t scheduler_index ;
 
-           scheduler_index = _Scheduler_Get_index ( scheduler ) ;
-            dnpp ->ceiling_priorities [ scheduler_index ] = 1 ;
-             } 
+  scheduler_index = _Scheduler_Get_index ( scheduler ) ;
+  dnpp ->ceiling_priorities [ scheduler_index ] = 1 ;
+} 
 
 
 RTEMS_INLINE_ROUTINE void _DNPP_Set_owner(
@@ -75,9 +73,10 @@ RTEMS_INLINE_ROUTINE Priority_Control _DNPP_Get_priority(
 {
   uint32_t scheduler_index;
   scheduler_index = _Scheduler_Get_index( scheduler );
- return dnpp->ceiling_priorities[ scheduler_index ];
-}
 
+  return dnpp->ceiling_priorities[ scheduler_index ];
+}
+/**tasks migration function*/
  RTEMS_INLINE_ROUTINE void _DNPP_Migrate(
      Thread_Control       *executing,
     Per_CPU_Control         *cpu
@@ -85,6 +84,7 @@ RTEMS_INLINE_ROUTINE Priority_Control _DNPP_Get_priority(
  {
  _Thread_Set_CPU(executing,cpu);
  }
+
 RTEMS_INLINE_ROUTINE void _DNPP_Set_priority(
   DNPP_Control            *dnpp,
   const Scheduler_Control *scheduler,
@@ -102,50 +102,50 @@ RTEMS_INLINE_ROUTINE void _DNPP_Replace_priority(
       Priority_Node  *ceiling_priority
 )
 {
-     ISR_lock_Context lock_context;
+ ISR_lock_Context lock_context;
 
-    _Thread_Wait_acquire_default( thread, &lock_context );
-    _Thread_Priority_replace( 
-                  thread,
-                  ceiling_priority,
-                  &dnpp->Ceiling_priority
+ _Thread_Wait_acquire_default( thread, &lock_context );
+ _Thread_Priority_replace( 
+        thread,
+        ceiling_priority,
+        &dnpp->Ceiling_priority
 );
-    _Thread_Wait_release_default( thread, &lock_context );
+
+ _Thread_Wait_release_default( thread, &lock_context );
 }
-
-
-
+/**raise priority to ceilings*/
 RTEMS_INLINE_ROUTINE Status_Control _DNPP_Raise_priority(
   DNPP_Control         *dnpp,
   Thread_Control       *thread,
   Priority_Node        *priority_node,
- Thread_queue_Context *queue_context
+  Thread_queue_Context *queue_context
 )
- {
+{
    Status_Control           status;
    ISR_lock_Context         lock_context;
    const Scheduler_Control *scheduler;
    Priority_Control         ceiling_priority;
    Scheduler_Node          *scheduler_node;
 
-   _Thread_queue_Context_clear_priority_updates( queue_context );
-   _Thread_Wait_acquire_default_critical( thread, &lock_context );
-   scheduler = _Thread_Scheduler_get_home( thread );
-   scheduler_node = _Thread_Scheduler_get_home_node( thread );
-   ceiling_priority = _DNPP_Get_priority( dnpp, scheduler );
-       if (
-        ceiling_priority 
-               < _Priority_Get_priority( &scheduler_node->Wait.Priority )
+_Thread_queue_Context_clear_priority_updates( queue_context );
+ _Thread_Wait_acquire_default_critical( thread, &lock_context );
+ scheduler = _Thread_Scheduler_get_home( thread );
+ scheduler_node = _Thread_Scheduler_get_home_node( thread );
+ ceiling_priority = _DNPP_Get_priority( dnpp, scheduler );
+ 
+ if (
+    ceiling_priority 
+       < _Priority_Get_priority( &scheduler_node->Wait.Priority )
 ) {
-     _Priority_Node_initialize( priority_node, ceiling_priority );
-     _Thread_Priority_add( thread, priority_node, queue_context );
-     status = STATUS_SUCCESSFUL;
-     } else {
-    status = STATUS_MUTEX_CEILING_VIOLATED;
-       }
-   _Thread_Wait_release_default_critical( thread, &lock_context );
-  return status;
-    }
+ _Priority_Node_initialize( priority_node, ceiling_priority );
+ _Thread_Priority_add( thread, priority_node, queue_context );
+ status = STATUS_SUCCESSFUL;
+ } else {
+ status = STATUS_MUTEX_CEILING_VIOLATED;
+}
+ _Thread_Wait_release_default_critical( thread, &lock_context );
+return status;
+}
 
 RTEMS_INLINE_ROUTINE void _DNPP_Remove_priority( 
   Thread_Control       *thread,
@@ -159,7 +159,7 @@ RTEMS_INLINE_ROUTINE void _DNPP_Remove_priority(
   _Thread_Priority_remove( thread, priority_node, queue_context );
   _Thread_Wait_release_default_critical( thread, &lock_context );
 }
-
+/**set new owner of resource*/
 RTEMS_INLINE_ROUTINE Status_Control _DNPP_Set_new(
   DNPP_Control         *dnpp,
   Thread_Control       *executing,
@@ -168,7 +168,7 @@ RTEMS_INLINE_ROUTINE Status_Control _DNPP_Set_new(
 {
   Status_Control   status;
   Per_CPU_Control *cpu_self;
-   status = _DNPP_Raise_priority(
+  status = _DNPP_Raise_priority(
                   dnpp,
                   executing,
                   &dnpp->Ceiling_priority,  
@@ -180,8 +180,8 @@ RTEMS_INLINE_ROUTINE Status_Control _DNPP_Set_new(
 }
  _DNPP_Set_owner( dnpp, executing );
  cpu_self = _Thread_Dispatch_disable_critical(
-                   &queue_context->Lock_context.Lock_context
-                        );
+            &queue_context->Lock_context.Lock_context
+);
   _DNPP_Release( dnpp, queue_context );
   _Thread_Priority_and_sticky_update( executing, 1 );
   _Thread_Dispatch_enable( cpu_self );
@@ -201,9 +201,9 @@ RTEMS_INLINE_ROUTINE Status_Control _DNPP_Initialize(
  if ( initially_locked ) {
      return STATUS_INVALID_NUMBER;
  }
-dnpp->ceiling_priorities = _Workspace_Allocate(
- sizeof( *dnpp->ceiling_priorities ) * scheduler_count
-   );
+ dnpp->ceiling_priorities = _Workspace_Allocate(
+ sizeof( *dnpp->ceiling_priorities ) * scheduler_count);
+ 
  if ( dnpp->ceiling_priorities == NULL ) {
   return STATUS_NO_MEMORY;
  }
@@ -220,7 +220,7 @@ dnpp->ceiling_priorities = _Workspace_Allocate(
   _Thread_queue_Object_initialize( &dnpp->Wait_queue );
          return STATUS_SUCCESSFUL;
     }
-
+/suspending in waiting queue*/
 RTEMS_INLINE_ROUTINE Status_Control _DNPP_Wait( 
   DNPP_Control            *dnpp,
   const Thread_queue_Operations *operations,
@@ -233,33 +233,36 @@ RTEMS_INLINE_ROUTINE Status_Control _DNPP_Wait(
 
   status = _DNPP_Raise_priority(
            dnpp,
-          executing,
-          &ceiling_priority,
-          queue_context
+           executing,
+           &ceiling_priority,
+           queue_context
 );
 
-   if ( status != STATUS_SUCCESSFUL ) {
-      _DNPP_Release( dnpp, queue_context );
-      return status;
+ if ( status != STATUS_SUCCESSFUL ) {
+     _DNPP_Release( dnpp, queue_context );
+ return status;
 }
   _Thread_queue_Context_set_thread_state(
-      queue_context,
-      STATES_WAITING_FOR_MUTEX
-   );
- _Thread_queue_Context_set_do_nothing_enqueue_callout( queue_context );
- _Thread_queue_Context_set_deadlock_callout(
    queue_context,
- _Thread_queue_Deadlock_status
+   STATES_WAITING_FOR_MUTEX
+   );
+ 
+  _Thread_queue_Context_set_do_nothing_enqueue_callout( queue_context );
+  _Thread_queue_Context_set_deadlock_callout(
+  queue_context,
+  _Thread_queue_Deadlock_status
  );
-_Thread_queue_Enqueue( 
+
+ _Thread_queue_Enqueue( 
  &dnpp->Wait_queue.Queue,
  DNPP_TQ_OPERATIONS,
  executing,
  queue_context
  );
-return _Thread_Wait_get_status( executing );
-}
 
+ return _Thread_Wait_get_status( executing );
+}
+/**obtain semaphore function*/
 RTEMS_INLINE_ROUTINE Status_Control _DNPP_Seize(
   DNPP_Control         *dnpp,
   Thread_Control       *executing,
@@ -267,46 +270,51 @@ RTEMS_INLINE_ROUTINE Status_Control _DNPP_Seize(
  Thread_queue_Context *queue_context
 )
 {
-   const Scheduler_Control *scheduler;
+ const Scheduler_Control *scheduler;
  Status_Control  status;
  Thread_Control *owner;
   Scheduler_Node          *scheduler_node;
  Per_CPU_Control         *cpu_semaphore = _Per_CPU_Get_by_index(1);
+ 
  _DNPP_Acquire_critical(dnpp, queue_context );
  scheduler = _Thread_Scheduler_get_home( executing );
  owner = _DNPP_Get_owner(dnpp);
+ 
  _DNPP_Set_Ceiling ( dnpp,scheduler);
     if ( owner == NULL ){
         status = _DNPP_Set_new( dnpp, executing, queue_context );
         _DNPP_Migrate(executing, cpu_semaphore);
     }
    else if (owner == executing){
-    _DNPP_Release (dnpp, queue_context);
-    status = STATUS_UNAVAILABLE;
+ 
+   _DNPP_Release (dnpp, queue_context);
+   status = STATUS_UNAVAILABLE;
 }
    else if ( wait ) {
  status = _DNPP_Wait(dnpp,executing,DNPP_TQ_OPERATIONS,queue_context);
 _DNPP_Migrate(executing,cpu_semaphore);  
    } else {
+ 
   _DNPP_Release( dnpp, queue_context );
   status = STATUS_UNAVAILABLE;
 }
 return status;
 }
-
- RTEMS_INLINE_ROUTINE Status_Control _DNPP_Surrender(
-                       DNPP_Control         *dnpp,
-                Thread_Control       *executing,
-                  Thread_queue_Context *queue_context
-            )
- {
+/**release semaphore function*/
+RTEMS_INLINE_ROUTINE Status_Control _DNPP_Surrender(
+   DNPP_Control         *dnpp,
+   Thread_Control       *executing,
+   Thread_queue_Context *queue_context
+)
+{
    Thread_queue_Heads *heads;
    const Scheduler_Control *scheduler;
    Priority_Control         core_priority;
    Scheduler_Node          *scheduler_node;
 
    Per_CPU_Control         *cpu = _Per_CPU_Get_by_index(0);
-if ( _DNPP_Get_owner( dnpp ) != executing ) {
+
+   if ( _DNPP_Get_owner( dnpp ) != executing ) {
         _ISR_lock_ISR_enable( &queue_context->Lock_context.Lock_context );
        return STATUS_NOT_OWNER;
 }
@@ -319,7 +327,7 @@ _DNPP_Migrate(executing,cpu);
 {
  Per_CPU_Control *cpu_self;
  cpu_self = _Thread_Dispatch_disable_critical(
-        &queue_context->Lock_context.Lock_context
+     &queue_context->Lock_context.Lock_context
               );
    _DNPP_Release( dnpp, queue_context );
    _Thread_Priority_and_sticky_update( executing, -1 );
