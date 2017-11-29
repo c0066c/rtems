@@ -42,7 +42,7 @@ int pthread_attr_getaffinity_np(
   if ( cpusetsize != attr->affinitysetsize)
     return EINVAL;
 
-  CPU_COPY( attr->affinityset, cpuset );
+  CPU_COPY( cpuset, attr->affinityset );
   return 0;
 }
 #endif

@@ -110,7 +110,7 @@ static ssize_t handler_write(
 
 static int handler_ioctl(
   rtems_libio_t *iop,
-  ioctl_command_t request,
+  uint32_t request,
   void *buffer
 )
 {

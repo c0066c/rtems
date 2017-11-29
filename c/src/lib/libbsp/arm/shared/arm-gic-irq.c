@@ -44,22 +44,34 @@ void bsp_interrupt_dispatch(void)
   }
 }
 
-void bsp_interrupt_vector_enable(rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_enable(rtems_vector_number vector)
 {
-  volatile gic_dist *dist = ARM_GIC_DIST;
+  rtems_status_code sc = RTEMS_SUCCESSFUL;
 
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
+  if (bsp_interrupt_is_valid_vector(vector)) {
+    volatile gic_dist *dist = ARM_GIC_DIST;
 
-  gic_id_enable(dist, vector);
+    gic_id_enable(dist, vector);
+  } else {
+    sc = RTEMS_INVALID_ID;
+  }
+
+  return sc;
 }
 
-void bsp_interrupt_vector_disable(rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_disable(rtems_vector_number vector)
 {
-  volatile gic_dist *dist = ARM_GIC_DIST;
+  rtems_status_code sc = RTEMS_SUCCESSFUL;
 
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
+  if (bsp_interrupt_is_valid_vector(vector)) {
+    volatile gic_dist *dist = ARM_GIC_DIST;
 
-  gic_id_disable(dist, vector);
+    gic_id_disable(dist, vector);
+  } else {
+    sc = RTEMS_INVALID_ID;
+  }
+
+  return sc;
 }
 
 static inline uint32_t get_id_count(volatile gic_dist *dist)
@@ -153,24 +165,20 @@ rtems_status_code arm_gic_irq_get_priority(
   return sc;
 }
 
-void bsp_interrupt_set_affinity(
+rtems_status_code arm_gic_irq_set_affinity(
   rtems_vector_number vector,
-  const Processor_mask *affinity
+  uint8_t targets
 )
 {
-  volatile gic_dist *dist = ARM_GIC_DIST;
-  uint8_t targets = (uint8_t) _Processor_mask_To_uint32_t(affinity, 0);
+  rtems_status_code sc = RTEMS_SUCCESSFUL;
 
-  gic_id_set_targets(dist, vector, targets);
-}
+  if (bsp_interrupt_is_valid_vector(vector)) {
+    volatile gic_dist *dist = ARM_GIC_DIST;
 
-void bsp_interrupt_get_affinity(
-  rtems_vector_number vector,
-  Processor_mask *affinity
-)
-{
-  volatile gic_dist *dist = ARM_GIC_DIST;
-  uint8_t targets = gic_id_get_targets(dist, vector);
+    gic_id_set_targets(dist, vector, targets);
+  } else {
+    sc = RTEMS_INVALID_ID;
+  }
 
-  _Processor_mask_From_uint32_t(affinity, targets, 0);
+  return sc;
 }

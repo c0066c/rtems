@@ -17,7 +17,7 @@
 #include <rtems.h>
 #include <rtems/diskdevs.h>
 #include <rtems/print.h>
-#include <sys/ioccom.h>
+#include <sys/ioctl.h>
 #include <stdio.h>
 
 #ifdef __cplusplus

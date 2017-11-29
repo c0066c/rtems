@@ -203,12 +203,20 @@ typedef struct {
   );
 
 #if defined(RTEMS_SMP)
+  /** @see _Scheduler_Get_affinity() */
+  bool ( *get_affinity )(
+    const Scheduler_Control *,
+    Thread_Control *,
+    size_t,
+    cpu_set_t *
+  );
+  
   /** @see _Scheduler_Set_affinity() */
   bool ( *set_affinity )(
     const Scheduler_Control *,
     Thread_Control *,
-    Scheduler_Node *,
-    const Processor_mask *
+    size_t,
+    const cpu_set_t *
   );
 #endif
 } Scheduler_Operations;
@@ -227,9 +235,9 @@ typedef struct Scheduler_Context {
 
 #if defined(RTEMS_SMP)
   /**
-   * @brief The set of processors owned by this scheduler instance.
+   * @brief Count of processors owned by this scheduler instance.
    */
-  Processor_mask Processors;
+  uint32_t processor_count;
 #endif
 } Scheduler_Context;
 
@@ -506,25 +514,46 @@ void _Scheduler_default_Start_idle(
 );
 
 #if defined(RTEMS_SMP)
-  /** 
-   * @brief Default implementation of the set affinity scheduler operation.
+  /**
+   * @brief Get affinity for the default scheduler.
    *
    * @param[in] scheduler The scheduler instance.
    * @param[in] thread The associated thread.
-   * @param[in] node The home scheduler node of the associated thread.
-   * @param[in] affinity The new processor affinity set for the thread.
+   * @param[in] cpusetsize The size of the cpuset.
+   * @param[out] cpuset Affinity set containing all CPUs.
    *
-   * @retval true The processor set of the scheduler is a subset of the affinity set.
-   * @retval false Otherwise.
+   * @retval 0 Successfully got cpuset
+   * @retval -1 The cpusetsize is invalid for the system
+   */
+  bool _Scheduler_default_Get_affinity(
+    const Scheduler_Control *scheduler,
+    Thread_Control          *thread,
+    size_t                   cpusetsize,
+    cpu_set_t               *cpuset
+  );
+
+  /** 
+   * @brief Set affinity for the default scheduler.
+   *
+   * @param[in] scheduler The scheduler instance.
+   * @param[in] thread The associated thread.
+   * @param[in] cpusetsize The size of the cpuset.
+   * @param[in] cpuset Affinity new affinity set.
+   *
+   * @retval 0 Successful
+   *
+   *  This method always returns successful and does not save
+   *  the cpuset.
    */
   bool _Scheduler_default_Set_affinity(
     const Scheduler_Control *scheduler,
     Thread_Control          *thread,
-    Scheduler_Node          *node,
-    const Processor_mask    *affinity
+    size_t                   cpusetsize,
+    const cpu_set_t         *cpuset
   );
 
   #define SCHEDULER_OPERATION_DEFAULT_GET_SET_AFFINITY \
+    , _Scheduler_default_Get_affinity \
     , _Scheduler_default_Set_affinity
 #else
   #define SCHEDULER_OPERATION_DEFAULT_GET_SET_AFFINITY

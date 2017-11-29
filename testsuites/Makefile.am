@@ -11,7 +11,7 @@ noinst_HEADERS += support/include/pritime.h
 noinst_HEADERS += support/include/primode.h
 noinst_HEADERS += support/include/tmtests_empty_function.h
 
-_SUBDIRS = @subdirs@
+SUBDIRS = @subdirs@
 
 EXTRA_DIST = PROBLEMS
 

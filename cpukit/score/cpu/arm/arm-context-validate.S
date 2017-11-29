@@ -44,10 +44,9 @@
   #define FRAME_SIZE (FRAME_OFFSET_LR + 4)
 #endif
 
-	.syntax	unified
 	.section	.text
 
-#ifdef __thumb2__
+#ifdef __thumb__
 FUNCTION_THUMB_ENTRY(_CPU_Context_validate)
 #else
 FUNCTION_ENTRY(_CPU_Context_validate)
@@ -175,33 +174,10 @@ check:
 	bne	restore
 .endm
 
-	/* A compare involving the stack pointer is deprecated */
-	mov	r1, sp
-	cmp	r2, r1
+	cmp	r2, sp
 	bne	restore
 
 	mov	r1, r0
-
-#ifdef __thumb2__
-	cmp	r1, r1
-	itttt	eq
-	addeq	r1, #1
-	addeq	r1, #2
-	addeq	r1, #4
-	addeq	r1, #8
-	subs	r1, #15
-	cmp	r1, r0
-	bne	restore
-	cmp	r1, r1
-	iteee	eq
-	addeq	r1, #1
-	addne	r1, #2
-	addne	r1, #4
-	addne	r1, #8
-	subs	r1, #1
-	cmp	r1, r0
-	bne	restore
-#endif
 
 #ifndef ARM_MULTILIB_VFP
 	check_register	r3

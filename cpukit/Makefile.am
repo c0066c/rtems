@@ -4,30 +4,30 @@ include $(top_srcdir)/automake/compile.am
 include $(top_srcdir)/automake/multilib.am
 
 # librtemscpu
-_SUBDIRS = . score rtems sapi posix
-_SUBDIRS += dev
-_SUBDIRS += dtc/libfdt
-_SUBDIRS += libcrypt
-_SUBDIRS += libcsupport libblock libfs
-_SUBDIRS += libdrvmgr
-_SUBDIRS += libnetworking librpc
-_SUBDIRS += libpci
-_SUBDIRS += libi2c
-_SUBDIRS += libmisc
-_SUBDIRS += libmd
-_SUBDIRS += libgnat
-_SUBDIRS += libdl
-_SUBDIRS += libstdthreads
-_SUBDIRS += libdebugger
-_SUBDIRS += wrapup
+SUBDIRS = . score rtems sapi posix
+SUBDIRS += dev
+SUBDIRS += dtc/libfdt
+SUBDIRS += libcrypt
+SUBDIRS += libcsupport libblock libfs
+SUBDIRS += libdrvmgr
+SUBDIRS += libnetworking librpc
+SUBDIRS += libpci
+SUBDIRS += libi2c
+SUBDIRS += libmisc
+SUBDIRS += libmd
+SUBDIRS += libgnat
+SUBDIRS += libdl
+SUBDIRS += libstdthreads
+SUBDIRS += libdebugger
+SUBDIRS += wrapup
 
-_SUBDIRS += zlib
+SUBDIRS += zlib
 
 # applications
-_SUBDIRS += ftpd
-_SUBDIRS += telnetd
-_SUBDIRS += pppd
-_SUBDIRS += mghttpd
+SUBDIRS += ftpd
+SUBDIRS += telnetd
+SUBDIRS += pppd
+SUBDIRS += mghttpd
 
 noinst_DATA = preinstall-stamp
 preinstall-stamp:
@@ -50,34 +50,32 @@ include_uuid_HEADERS = libmisc/uuid/uuid.h
 include_utf8procdir = $(includedir)/utf8proc
 include_utf8proc_HEADERS = libmisc/utf8proc/utf8proc.h
 
+include_xzdir = $(includedir)
+include_xz_HEADERS = libmisc/xz/xz.h
+
 include_sysdir = $(includedir)/sys
 include_sys_HEADERS =
 
 include_HEADERS += include/crypt.h
 include_HEADERS += include/memory.h
 
-include_HEADERS += libmisc/xz/xz.h
-
 include_sys_HEADERS += libcsupport/include/sys/event.h
-include_sys_HEADERS += libcsupport/include/sys/poll.h
-include_sys_HEADERS += libcsupport/include/sys/statvfs.h
-include_sys_HEADERS += libcsupport/include/sys/utsname.h
-
-include_sys_HEADERS += include/sys/endian.h
-include_sys_HEADERS += include/sys/priority.h
-
-if !HAS_NEWLIB_20170522_HEADER
-include_sys_HEADERS += include/sys/_iovec.h
-include_sys_HEADERS += include/sys/uio.h
 include_sys_HEADERS += libcsupport/include/sys/filio.h
 include_sys_HEADERS += libcsupport/include/sys/ioccom.h
 include_sys_HEADERS += libcsupport/include/sys/ioctl.h
+include_sys_HEADERS += libcsupport/include/sys/poll.h
 include_sys_HEADERS += libcsupport/include/sys/sockio.h
+include_sys_HEADERS += libcsupport/include/sys/statvfs.h
 include_sys_HEADERS += libcsupport/include/sys/_termios.h
 include_sys_HEADERS += libcsupport/include/sys/termios.h
 include_sys_HEADERS += libcsupport/include/sys/ttycom.h
 include_sys_HEADERS += libcsupport/include/sys/ttydefaults.h
-endif
+include_sys_HEADERS += libcsupport/include/sys/utsname.h
+
+include_sys_HEADERS += include/sys/endian.h
+include_sys_HEADERS += include/sys/uio.h
+include_sys_HEADERS += include/sys/_iovec.h
+include_sys_HEADERS += include/sys/priority.h
 
 if LIBNETWORKING
 include_rtems_bsdnetdir = $(includedir)/rtems/bsdnet

@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I aclocal
 
-_SUBDIRS = . @BSP_SUBDIRS@
+SUBDIRS = . @BSP_SUBDIRS@
 DIST_SUBDIRS = @BSP_SUBDIRS@
 
 clean-local:

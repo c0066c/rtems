@@ -105,6 +105,6 @@ void * _POSIX_Shm_Object_mmap_from_heap(
     return NULL;
   }
 
-  return (char*)shm_obj->handle + off;
+  return &(shm_obj->handle[off]);
 }
 

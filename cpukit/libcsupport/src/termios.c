@@ -31,7 +31,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
-#include <sys/filio.h>
 #include <sys/ttycom.h>
 
 #include <rtems/termiostypes.h>
@@ -578,7 +577,7 @@ rtems_termios_open_tty(
      * Set default parameters
      */
     tty->termios.c_iflag = BRKINT | ICRNL | IXON | IMAXBEL;
-    tty->termios.c_oflag = OPOST | ONLCR | OXTABS;
+    tty->termios.c_oflag = OPOST | ONLCR | XTABS;
     tty->termios.c_cflag = CS8 | CREAD | CLOCAL;
     tty->termios.c_lflag =
        ISIG | ICANON | IEXTEN | ECHO | ECHOK | ECHOE | ECHOCTL;
@@ -1189,7 +1188,7 @@ oproc (unsigned char c, rtems_termios_tty *tty, bool wait)
 
     case '\t':
       columnAdj = 8 - (oldColumn & 7);
-      if ((tty->termios.c_oflag & TABDLY) == OXTABS) {
+      if ((tty->termios.c_oflag & TABDLY) == XTABS) {
         int i;
 
         len = (size_t) columnAdj;
@@ -2181,8 +2180,7 @@ rtems_termios_imfs_write (rtems_libio_t *iop, const void *buffer, size_t count)
 }
 
 static int
-rtems_termios_imfs_ioctl (rtems_libio_t *iop, ioctl_command_t request,
-  void *buffer)
+rtems_termios_imfs_ioctl (rtems_libio_t *iop, uint32_t request, void *buffer)
 {
   rtems_status_code sc;
   rtems_libio_ioctl_args_t args;
@@ -2213,7 +2211,6 @@ static const rtems_filesystem_file_handlers_r rtems_termios_imfs_handler = {
   .fdatasync_h = rtems_filesystem_default_fsync_or_fdatasync,
   .fcntl_h = rtems_filesystem_default_fcntl,
   .kqfilter_h = rtems_termios_kqfilter,
-  .mmap_h = rtems_termios_mmap,
   .poll_h = rtems_termios_poll,
   .readv_h = rtems_filesystem_default_readv,
   .writev_h = rtems_filesystem_default_writev

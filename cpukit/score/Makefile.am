@@ -1,7 +1,7 @@
 include $(top_srcdir)/automake/multilib.am
 include $(top_srcdir)/automake/compile.am
 
-_SUBDIRS = cpu
+SUBDIRS = cpu
 
 ## include
 
@@ -28,6 +28,8 @@ include_rtems_score_HEADERS = include/rtems/score/address.h
 include_rtems_score_HEADERS += include/rtems/score/apimutex.h
 include_rtems_score_HEADERS += include/rtems/score/assert.h
 include_rtems_score_HEADERS += include/rtems/score/atomic.h
+include_rtems_score_HEADERS += include/rtems/score/bucket.h
+include_rtems_score_HEADERS += include/rtems/score/bucketimpl.h
 include_rtems_score_HEADERS += include/rtems/score/chain.h
 include_rtems_score_HEADERS += include/rtems/score/chainimpl.h
 include_rtems_score_HEADERS += include/rtems/score/context.h
@@ -126,7 +128,6 @@ include_rtems_score_HEADERS += include/rtems/score/threadmp.h
 endif
 
 if HAS_SMP
-include_rtems_score_HEADERS += include/rtems/score/scheduleredfsmp.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerprioritysmpimpl.h
 include_rtems_score_HEADERS += include/rtems/score/schedulerpriorityaffinitysmp.h
 include_rtems_score_HEADERS += include/rtems/score/schedulersimplesmp.h
@@ -150,7 +151,6 @@ endif
 if HAS_SMP
 libscore_a_SOURCES += src/percpustatewait.c
 libscore_a_SOURCES += src/profilingsmplock.c
-libscore_a_SOURCES += src/scheduleredfsmp.c
 libscore_a_SOURCES += src/schedulerpriorityaffinitysmp.c
 libscore_a_SOURCES += src/schedulerprioritysmp.c
 libscore_a_SOURCES += src/schedulersimplesmp.c
@@ -161,6 +161,7 @@ libscore_a_SOURCES += src/smpmulticastaction.c
 libscore_a_SOURCES += src/cpuset.c
 libscore_a_SOURCES += src/cpusetprintsupport.c
 libscore_a_SOURCES += src/schedulerdefaultaskforhelp.c
+libscore_a_SOURCES += src/schedulerdefaultgetaffinity.c
 libscore_a_SOURCES += src/schedulerdefaultsetaffinity.c
 libscore_a_SOURCES += src/schedulersmp.c
 libscore_a_SOURCES += src/schedulersmpstartidle.c
@@ -353,7 +354,6 @@ libscore_a_SOURCES += src/semaphore.c
 libscore_a_SOURCES += src/smpbarrierwait.c
 libscore_a_SOURCES += src/kern_tc.c
 libscore_a_SOURCES += src/libatomic.c
-libscore_a_SOURCES += src/processormaskcopy.c
 
 EXTRA_DIST = src/Unlimited.txt
 

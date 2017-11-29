@@ -59,7 +59,6 @@ static inline void *rmalloc(size_t l) { return malloc(l); }
 static inline void  rfree(void *p) { return free(p); }
 
 #define _KERNEL
-#include <sys/param.h>
 #include <sys/mbuf.h>
 
 static void

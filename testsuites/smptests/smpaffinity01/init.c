@@ -59,7 +59,7 @@ void Validate_setaffinity_errors(void)
 
   /* Verify rtems_task_set_affinity validates cpusetsize */
   puts( "Init - rtems_task_set_affinity - Invalid cpusetsize - RTEMS_INVALID_NUMBER" );
-  sc = rtems_task_set_affinity( Init_id,  1, &cpuset );
+  sc = rtems_task_set_affinity( Init_id,  sizeof(cpu_set_t) * 2, &cpuset );
   rtems_test_assert( sc == RTEMS_INVALID_NUMBER );
 
   /* Verifyrtems_task_set_affinity validates cpuset */
@@ -84,7 +84,7 @@ void Validate_getaffinity_errors(void)
   puts(
     "Init - rtems_task_get_affinity - Invalid cpusetsize - RTEMS_INVALID_NUMBER"
   );
-  sc = rtems_task_get_affinity( Init_id,  1, &cpuset );
+  sc = rtems_task_get_affinity( Init_id,  sizeof(cpu_set_t) * 2, &cpuset );
   rtems_test_assert( sc == RTEMS_INVALID_NUMBER );
 
   /* Verify rtems_task_get_affinity validates cpuset */
@@ -177,7 +177,7 @@ void Validate_affinity(void )
 
   /* Change the affinity for each low priority task */
   puts("Init - Change affinity on Low priority tasks");
-  CPU_COPY(&cpuset0, &cpuset1);
+  CPU_COPY(&cpuset1, &cpuset0);
   for (i=0; i<cpu_count; i++){
 
     CPU_CLR(i, &cpuset1);
@@ -193,7 +193,7 @@ void Validate_affinity(void )
   }
 
   puts("Init - Validate affinity on Low priority tasks");
-  CPU_COPY(&cpuset0, &cpuset1);
+  CPU_COPY(&cpuset1, &cpuset0);
   for (i=0; i<cpu_count; i++){
     CPU_CLR(i, &cpuset1);
 

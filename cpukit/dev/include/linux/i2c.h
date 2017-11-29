@@ -32,12 +32,11 @@
  *
  * @brief RTEMS port of Linux I2C user-space API.
  *
- * Additional documentation is available through the Linux sources, see:
+ * Additional documentation is available through the Linux sources, see
  *
  * - /usr/src/linux/include/uapi/linux/i2c.h,
- * - /usr/src/linux/include/uapi/linux/i2c-dev.h
- * - https://www.kernel.org/doc/Documentation/i2c/i2c-protocol
- * - https://www.kernel.org/doc/Documentation/i2c/dev-interface
+ * - /usr/src/linux/include/uapi/linux/i2c-dev.h, and
+ * - /usr/src/linux/Documentation/i2c.
  *
  * @{
  */

@@ -57,10 +57,10 @@ static void mcf5329_tc_tick(void)
 /*
  * Turn off the clock
  */
-#define Clock_driver_support_shutdown_hardware() \
-  do { \
-    MCF_PIT3_PCSR &= ~MCF_PIT_PCSR_EN; \
-  } while (0)
+static void Clock_driver_support_shutdown_hardware(void)
+{
+  MCF_PIT3_PCSR &= ~MCF_PIT_PCSR_EN;
+}
 
 /*
  * Set up the clock hardware

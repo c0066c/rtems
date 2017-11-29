@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Chris Johns <chrisj@rtems.org>.
- * All rights reserved.
+ * Copyright (c) 2016 Chris Johns <chrisj@rtems.org>.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -195,16 +194,6 @@ extern int rtems_debugger_target_swbreak_insert(void);
 extern int rtems_debugger_target_swbreak_remove(void);
 
 /**
- * Insert hardware breakpoints into the hardware.
- */
-extern int rtems_debugger_target_hwbreak_insert(void);
-
-/**
- * Remove hardware breakpoints from the hardware.
- */
-extern int rtems_debugger_target_hwbreak_remove(void);
-
-/**
  * Hardware breakpoints.
  */
 extern int rtems_debugger_target_hwbreak_control(rtems_debugger_target_watchpoint type,
@@ -219,14 +208,9 @@ extern rtems_debugger_target_exc_action
 rtems_debugger_target_exception(CPU_Exception_frame* frame);
 
 /**
- * See if the thread is an exception thread.
+ * Set the thread's exception stack frame pointer.
  */
-extern void rtems_debugger_target_exception_thread(rtems_debugger_thread* thread);
-
-/**
- * If the thread is an exception thread, resume it.
- */
-extern void rtems_debugger_target_exception_thread_resume(rtems_debugger_thread* thread);
+extern int rtems_debugger_target_set_exception_frame(rtems_debugger_thread* thread);
 
 /**
  * Target instruction cache sync. This depends on the target but it normally

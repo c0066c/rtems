@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2017 embedded brains GmbH.  All rights reserved.
+ * Copyright (c) 2014 embedded brains GmbH.  All rights reserved.
  *
  *  embedded brains GmbH
  *  Dornierstr. 4
@@ -19,44 +19,35 @@
 #include <rtems/score/schedulerimpl.h>
 
 bool _Scheduler_Set_affinity(
-  Thread_Control       *the_thread,
-  size_t                cpusetsize,
-  const cpu_set_t      *cpuset
+  Thread_Control  *the_thread,
+  size_t           cpusetsize,
+  const cpu_set_t *cpuset
 )
 {
-  Processor_mask             affinity;
-  Processor_mask_Copy_status status;
-  const Scheduler_Control   *scheduler;
-  Scheduler_Node            *node;
-  ISR_lock_Context           lock_context;
-  bool                       ok;
+  const Scheduler_Control *scheduler;
+  ISR_lock_Context         lock_context;
+  bool                     ok;
 
-  status = _Processor_mask_From_cpu_set_t( &affinity, cpusetsize, cpuset );
-  if ( !_Processor_mask_Is_at_most_partial_loss( status ) ) {
+  if ( !_CPU_set_Is_large_enough( cpusetsize ) ) {
     return false;
   }
 
   scheduler = _Thread_Scheduler_get_home( the_thread );
   _Scheduler_Acquire_critical( scheduler, &lock_context );
 
-  node = _Thread_Scheduler_get_home_node( the_thread );
 #if defined(RTEMS_SMP)
   ok = ( *scheduler->Operations.set_affinity )(
     scheduler,
     the_thread,
-    node,
-    &affinity
+    cpusetsize,
+    cpuset
   );
-
-  if ( ok ) {
-    _Processor_mask_Assign( &the_thread->Scheduler.Affinity, &affinity );
-  }
 #else
   ok = _Scheduler_default_Set_affinity_body(
     scheduler,
     the_thread,
-    node,
-    &affinity
+    cpusetsize,
+    cpuset
   );
 #endif
 

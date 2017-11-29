@@ -50,8 +50,8 @@ rtems_task Init(
 
   int status = 0;
   void *opaque;
-  char linkname_n[32] = {0};
-  char linkname_p[32] = {0};
+  char linkname_n[20] = {0};
+  char linkname_p[20] = {0};
   int i;
   struct stat stat_buf;
 
@@ -74,8 +74,8 @@ rtems_task Init(
   rtems_test_assert( status == 0 );
 
   for( i = 1 ; ; ++i ) {
-    sprintf( linkname_p, "dir01-link%04d", i-1 );
-    sprintf( linkname_n, "dir01-link%04d", i );
+    sprintf( linkname_p, "dir01-link%d", i-1 );
+    sprintf( linkname_n, "dir01-link%d", i );
     printf( "\nCreating link %s for %s\n", linkname_n, linkname_p );
     status = link( linkname_p, linkname_n );
     if( status != 0 ) {

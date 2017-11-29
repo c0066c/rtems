@@ -48,14 +48,9 @@ tar01$(EXEEXT): $(tar01_OBJECTS) $(tar01_DEPENDENCIES)
 	@rm -f tar01$(EXEEXT)
 	$(make-exe)
 
-if TARTEST_XZ
-init.$(OBJEXT): initial_filesystem_tar.h \
+init.c: initial_filesystem_tar.h \
 	initial_filesystem_tar_gz.h \
 	initial_filesystem_tar_xz.h
-else
-init.$(OBJEXT): initial_filesystem_tar.h \
-	initial_filesystem_tar_gz.h
-endif
 
 initial_filesystem_tar.c: initial_filesystem.tar
 	$(BIN2C) -C initial_filesystem.tar initial_filesystem_tar

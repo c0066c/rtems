@@ -25,7 +25,6 @@
 
 #include <bsp.h>
 #include <bsp/arm-gic.h>
-#include <rtems/score/processormask.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,14 +58,9 @@ rtems_status_code arm_gic_irq_get_priority(
   uint8_t *priority
 );
 
-void bsp_interrupt_set_affinity(
+rtems_status_code arm_gic_irq_set_affinity(
   rtems_vector_number vector,
-  const Processor_mask *affinity
-);
-
-void bsp_interrupt_get_affinity(
-  rtems_vector_number vector,
-  Processor_mask *affinity
+  uint8_t targets
 );
 
 typedef enum {

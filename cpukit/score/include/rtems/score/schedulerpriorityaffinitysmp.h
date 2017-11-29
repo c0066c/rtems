@@ -68,6 +68,7 @@ extern "C" {
     _Scheduler_default_Cancel_job, \
     _Scheduler_default_Tick, \
     _Scheduler_SMP_Start_idle, \
+    _Scheduler_priority_affinity_SMP_Get_affinity, \
     _Scheduler_priority_affinity_SMP_Set_affinity \
   }
 
@@ -99,6 +100,24 @@ void _Scheduler_priority_affinity_SMP_Unblock(
   const Scheduler_Control *scheduler,
   Thread_Control          *thread,
   Scheduler_Node          *node
+);
+
+/**
+ * @brief Get affinity for the priority affinity SMP scheduler.
+ *
+ * @param[in] scheduler The scheduler of the thread.
+ * @param[in] thread The associated thread.
+ * @param[in] cpusetsize The size of the cpuset.
+ * @param[in,out] cpuset The associated affinity set.
+ *
+ * @retval 0 Successfully got cpuset
+ * @retval -1 The cpusetsize is invalid for the system
+ */
+bool _Scheduler_priority_affinity_SMP_Get_affinity(
+  const Scheduler_Control *scheduler,
+  Thread_Control          *thread,
+  size_t                   cpusetsize,
+  cpu_set_t               *cpuset
 );
 
 void _Scheduler_priority_affinity_SMP_Update_priority(
@@ -141,7 +160,8 @@ Thread_Control *_Scheduler_priority_affinity_SMP_Remove_processor(
  *
  * @param[in] scheduler The scheduler of the thread.
  * @param[in] thread The associated thread.
- * @param[in] affinity The new affinity set.
+ * @param[in] cpusetsize The size of the cpuset.
+ * @param[in] cpuset Affinity new affinity set.
  *
  * @retval true if successful
  * @retval false if unsuccessful
@@ -149,8 +169,8 @@ Thread_Control *_Scheduler_priority_affinity_SMP_Remove_processor(
 bool _Scheduler_priority_affinity_SMP_Set_affinity(
   const Scheduler_Control *scheduler,
   Thread_Control          *thread,
-  Scheduler_Node          *node,
-  const Processor_mask    *affinity
+  size_t                   cpusetsize,
+  const cpu_set_t         *cpuset
 );
 
 /**

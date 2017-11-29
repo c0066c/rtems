@@ -30,12 +30,19 @@ void _Watchdog_Remove(
   Watchdog_Control *the_watchdog
 )
 {
-  if ( _Watchdog_Is_scheduled( the_watchdog ) ) {
-    if ( header->first == &the_watchdog->Node.RBTree ) {
-      _Watchdog_Next_first( header, the_watchdog );
-    }
+/* if ( _Watchdog_Is_scheduled( the_watchdog ) ) {
+ *   if ( header->first == &the_watchdog->Node.RBTree ) {
+ *     _Watchdog_Next_first( header, the_watchdog );
+ *   }
 
-    _RBTree_Extract( &header->Watchdogs, &the_watchdog->Node.RBTree );
-    _Watchdog_Set_state( the_watchdog, WATCHDOG_INACTIVE );
-  }
+ *   _RBTree_Extract( &header->Watchdogs, &the_watchdog->Node.RBTree );
+ *   _Watchdog_Set_state( the_watchdog, WATCHDOG_INACTIVE );
+ * }
+ if ( _Watchdog_Is_scheduled( the_watchdog ) )
+	{
+		_Bucket_Remove_Scheduled();
+		_Watchdog_Next_first( header, the_watchdog );
+	}
+ 	_Watchdog_Set_state( the_watchdog, WATCHDOG_INACTIVE );
+
 }

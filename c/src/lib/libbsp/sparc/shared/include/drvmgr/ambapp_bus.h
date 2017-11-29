@@ -91,7 +91,7 @@ struct ambapp_ops {
 	int	(*int_unmask)(struct drvmgr_dev *dev, int index);
 #ifdef RTEMS_SMP
 	int 	(*int_set_affinity)(struct drvmgr_dev *dev, int index,
-				const Processor_mask *cpus);
+				Processor_mask cpus);
 #endif
 	int	(*get_params)
 		(struct drvmgr_dev *, struct drvmgr_bus_params *);

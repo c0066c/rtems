@@ -70,13 +70,9 @@ typedef struct {
   void *tls_blocks[1];
 } TLS_Dynamic_thread_vector;
 
-typedef struct TLS_Thread_control_block {
-#ifdef __i386__
-  struct TLS_Thread_control_block *tcb;
-#else
+typedef struct {
   TLS_Dynamic_thread_vector *dtv;
   uintptr_t reserved;
-#endif
 } TLS_Thread_control_block;
 
 typedef struct {
@@ -113,16 +109,10 @@ static inline uintptr_t _TLS_Get_allocation_size(
   uintptr_t alignment
 )
 {
-  uintptr_t allocation_size = 0;
+  uintptr_t aligned_size = _TLS_Heap_align_up( size );
 
-  allocation_size += _TLS_Heap_align_up( size );
-  allocation_size += _TLS_Get_thread_control_block_area_size( alignment );
-
-#ifndef __i386__
-  allocation_size += sizeof(TLS_Dynamic_thread_vector);
-#endif
-
-  return allocation_size;
+  return _TLS_Get_thread_control_block_area_size( alignment )
+    + aligned_size + sizeof(TLS_Dynamic_thread_vector);
 }
 
 static inline void *_TLS_Copy_and_clear( void *tls_area )
@@ -150,14 +140,9 @@ static inline void *_TLS_Initialize(
   TLS_Dynamic_thread_vector *dtv
 )
 {
-#ifdef __i386__
-  (void) dtv;
-  tcb->tcb = tcb;
-#else
   tcb->dtv = dtv;
   dtv->generation_number = 1;
   dtv->tls_blocks[0] = tls_block;
-#endif
 
   return _TLS_Copy_and_clear( tls_block );
 }

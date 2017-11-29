@@ -100,13 +100,13 @@ typedef struct {
     Thread_Entry_information   entry;
     void                      *stack;
     uint32_t                   stack_size;
-    char                       scheduler_name[5];
+    uint32_t                   cpu;
     rtems_task_priority        priority;
     States_Control             state;
     rtems_event_set            events;
     rtems_mode                 modes;
     rtems_attribute            attributes;
-    char                       wait[17];
+    char                       wait[18];
     uint32_t                   ticks;
 } rtems_monitor_task_t;
 

@@ -28,6 +28,24 @@
 #include <bsp/irq.h>
 #include <rtems/score/armv4.h>
 
+/**
+ * @brief Check if isr vector is valid
+ *
+ * Check if isr vector is valid by using BSP_INTERRUPT_VECTOR_MAX and
+ * BSP_INTERRUPT_VECTOR_MIN defined in irq.h
+ *
+ * @param[in] vector interrupt vector to be checked.
+ * @retval TRUE vector is valid.
+ * @retval FALSE vector is invalid
+ */
+static inline bool tms570_irq_is_valid(
+  rtems_vector_number vector
+)
+{
+  return (vector <= BSP_INTERRUPT_VECTOR_MAX) &&
+         (vector > BSP_INTERRUPT_VECTOR_MIN);
+}
+
 unsigned int priorityTable[BSP_INTERRUPT_VECTOR_MAX+1];
 
 /**
@@ -46,7 +64,7 @@ void tms570_irq_set_priority(
   unsigned priority
 )
 {
-  if ( bsp_interrupt_is_valid_vector(vector) ) {
+  if ( tms570_irq_is_valid(vector) ) {
     priorityTable[vector] = priority;
   }
 }
@@ -66,7 +84,7 @@ unsigned tms570_irq_get_priority(
   rtems_vector_number vector
 )
 {
-  if ( bsp_interrupt_is_valid_vector(vector) ) {
+  if ( tms570_irq_is_valid(vector) ) {
    return priorityTable[vector];
  }
  return 0;
@@ -96,12 +114,17 @@ void bsp_interrupt_dispatch(void)
  * @retval RTEMS_INVALID_ID vector is invalid.
  * @retval RTEMS_SUCCESSFUL interrupt source enabled.
  */
-void bsp_interrupt_vector_enable(
+rtems_status_code bsp_interrupt_vector_enable(
   rtems_vector_number vector
 )
 {
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
+  if( !tms570_irq_is_valid(vector) ) {
+    return RTEMS_INVALID_ID;
+  }
+
   TMS570_VIM.REQENASET[vector >> 5] = 1 << (vector & 0x1f);
+
+  return RTEMS_SUCCESSFUL;
 }
 
 /**
@@ -113,12 +136,17 @@ void bsp_interrupt_vector_enable(
  * @retval RTEMS_INVALID_ID vector is invalid.
  * @retval RTEMS_SUCCESSFUL interrupt source disabled.
  */
-void bsp_interrupt_vector_disable(
+rtems_status_code bsp_interrupt_vector_disable(
   rtems_vector_number vector
 )
 {
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
+  if( !tms570_irq_is_valid(vector) ) {
+    return RTEMS_INVALID_ID;
+  }
+
   TMS570_VIM.REQENACLR[vector >> 5] = 1 << (vector & 0x1f);
+
+  return RTEMS_SUCCESSFUL;
 }
 
 /**

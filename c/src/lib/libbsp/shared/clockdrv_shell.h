@@ -80,7 +80,7 @@ static void Clock_driver_timecounter_tick( void )
 
     if ( _Per_CPU_Is_boot_processor( cpu ) ) {
       rtems_timecounter_tick();
-    } else if ( _Processor_mask_Is_set( _SMP_Get_online_processors(), cpu_index ) ) {
+    } else if ( _Processor_mask_Is_set( _SMP_Online_processors, cpu_index ) ) {
       _Watchdog_Tick( cpu );
     }
   }
@@ -102,9 +102,7 @@ static void Clock_driver_timecounter_tick( void )
  */
 volatile uint32_t    Clock_driver_ticks;
 
-#ifdef Clock_driver_support_shutdown_hardware
 void Clock_exit( void );
-#endif
 
 /**
  *  @brief Clock_isr
@@ -183,7 +181,6 @@ rtems_isr Clock_isr(
   #endif
 }
 
-#ifdef Clock_driver_support_shutdown_hardware
 /**
  *  @brief Clock_exit
  *
@@ -196,7 +193,6 @@ void Clock_exit( void )
 
   /* do not restore old vector */
 }
-#endif
 
 /**
  * @brief Clock_initialize
@@ -231,9 +227,7 @@ rtems_device_driver Clock_initialize(
   Clock_driver_support_install_isr( Clock_isr, Old_ticker );
 
   #ifdef RTEMS_SMP
-    Clock_driver_support_set_interrupt_affinity(
-      _SMP_Get_online_processors()
-    );
+    Clock_driver_support_set_interrupt_affinity( _SMP_Online_processors );
   #endif
 
   /*
@@ -241,9 +235,7 @@ rtems_device_driver Clock_initialize(
    */
   Clock_driver_support_initialize_hardware();
 
-#ifdef Clock_driver_support_shutdown_hardware
   atexit( Clock_exit );
-#endif
 
   /*
    *  If we are counting ISRs per tick, then initialize the counter.

@@ -376,12 +376,10 @@ rtems_status_code mpc83xx_ipic_set_highest_priority_interrupt(
 /*
  * functions to enable/disable a source at the ipic
  */
-void bsp_interrupt_vector_enable( rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_enable( rtems_vector_number irqnum)
 {
-  rtems_vector_number vecnum = vector - BSP_IPIC_IRQ_LOWEST_OFFSET;
+  rtems_vector_number vecnum = irqnum - BSP_IPIC_IRQ_LOWEST_OFFSET;
   const BSP_isrc_rsc_t *rsc_ptr;
-
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
 
   if (MPC83XX_IPIC_IS_VALID_VECTOR( vecnum)) {
     rsc_ptr = &mpc83xx_ipic_isrc_rsc [vecnum];
@@ -394,14 +392,14 @@ void bsp_interrupt_vector_enable( rtems_vector_number vector)
       rtems_interrupt_enable(level);
     }
   }
+
+  return RTEMS_SUCCESSFUL;
 }
 
-void bsp_interrupt_vector_disable( rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_disable( rtems_vector_number irqnum)
 {
-  rtems_vector_number vecnum = vector - BSP_IPIC_IRQ_LOWEST_OFFSET;
+  rtems_vector_number vecnum = irqnum - BSP_IPIC_IRQ_LOWEST_OFFSET;
   const BSP_isrc_rsc_t *rsc_ptr;
-
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
 
   if (MPC83XX_IPIC_IS_VALID_VECTOR( vecnum)) {
     rsc_ptr = &mpc83xx_ipic_isrc_rsc [vecnum];
@@ -414,6 +412,8 @@ void bsp_interrupt_vector_disable( rtems_vector_number vector)
       rtems_interrupt_enable(level);
     }
   }
+
+  return RTEMS_SUCCESSFUL;
 }
 
 /*

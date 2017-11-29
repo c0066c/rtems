@@ -22,6 +22,7 @@
 #include <rtems.h>
 #include <rtems/libcsupport.h>
 
+#define TESTS_USE_PRINTF
 #include "tmacros.h"
 
 const char rtems_test_name[] = "SPTLS 2";

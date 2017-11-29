@@ -47,8 +47,6 @@ extern void domathl(void);
 
 #define CONFIGURE_RTEMS_INIT_TASKS_TABLE
 
-#define CONFIGURE_INIT_TASK_ATTRIBUTES RTEMS_FLOATING_POINT
-
 #define CONFIGURE_INIT
 #include <rtems/confdefs.h>
 

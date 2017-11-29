@@ -26,20 +26,24 @@ void bsp_interrupt_dispatch(void)
   bsp_interrupt_handler_dispatch(vector);
 }
 
-void bsp_interrupt_vector_enable(rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_enable(rtems_vector_number vector)
 {
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
+  if (vector >= MC9328MXL_NUM_INTS)
+     return RTEMS_INVALID_ID;
 
-  if (vector < MC9328MXL_NUM_INTS)
-    MC9328MXL_AITC_INTENNUM = vector;
+  MC9328MXL_AITC_INTENNUM = vector;
+
+  return RTEMS_SUCCESSFUL;
 }
 
-void bsp_interrupt_vector_disable(rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_disable(rtems_vector_number vector)
 {
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
+  if (vector >= MC9328MXL_NUM_INTS)
+     return RTEMS_INVALID_ID;
 
-  if (vector < MC9328MXL_NUM_INTS)
-    MC9328MXL_AITC_INTDISNUM = vector;
+  MC9328MXL_AITC_INTDISNUM = vector;
+
+  return RTEMS_SUCCESSFUL;
 }
 
 rtems_status_code bsp_interrupt_facility_initialize(void)

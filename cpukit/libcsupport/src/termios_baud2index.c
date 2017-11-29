@@ -18,7 +18,7 @@
 #include "config.h"
 #endif
 
-#include <termios.h>
+#include <sys/termios.h>
 #include <rtems/termiostypes.h>
 
 int rtems_termios_baud_to_index(

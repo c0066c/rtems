@@ -76,7 +76,6 @@ libbsp_a_LIBADD =
 
 # Shared
 libbsp_a_SOURCES += ../../shared/bootcard.c
-libbsp_a_SOURCES += ../../shared/src/bsp-fdt.c
 libbsp_a_SOURCES += ../../shared/bspclean.c
 libbsp_a_SOURCES += ../../shared/bspgetworkarea.c
 libbsp_a_SOURCES += ../../shared/bsppredriverhook.c
@@ -115,7 +114,7 @@ libbsp_a_SOURCES += ../../shared/console.c \
         ../../shared/console_control.c
 
 # I2C
-libbsp_a_SOURCES += i2c/bbb-i2c.c
+libbsp_a_SOURCES += misc/i2c.c
 
 # GPIO
 libbsp_a_SOURCES += gpio/bbb-gpio.c

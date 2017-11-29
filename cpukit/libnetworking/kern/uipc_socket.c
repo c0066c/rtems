@@ -44,7 +44,6 @@
 #include <sys/resourcevar.h>
 #include <sys/signalvar.h>
 #include <sys/sysctl.h>
-#include <sys/uio.h>
 #include <limits.h>
 #ifdef __rtems__
 /*

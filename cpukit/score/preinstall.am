@@ -80,6 +80,14 @@ $(PROJECT_INCLUDE)/rtems/score/atomic.h: include/rtems/score/atomic.h $(PROJECT_
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/atomic.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/atomic.h
 
+$(PROJECT_INCLUDE)/rtems/score/bucket.h: include/rtems/score/bucket.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/bucket.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/bucket.h
+
+$(PROJECT_INCLUDE)/rtems/score/bucketimpl.h: include/rtems/score/bucketimpl.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
+	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/bucketimpl.h
+PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/bucketimpl.h
+
 $(PROJECT_INCLUDE)/rtems/score/chain.h: include/rtems/score/chain.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/chain.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/chain.h
@@ -439,10 +447,6 @@ $(PROJECT_INCLUDE)/rtems/score/threadmp.h: include/rtems/score/threadmp.h $(PROJ
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/threadmp.h
 endif
 if HAS_SMP
-$(PROJECT_INCLUDE)/rtems/score/scheduleredfsmp.h: include/rtems/score/scheduleredfsmp.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
-	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/scheduleredfsmp.h
-PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/scheduleredfsmp.h
-
 $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h: include/rtems/score/schedulerprioritysmpimpl.h $(PROJECT_INCLUDE)/rtems/score/$(dirstamp)
 	$(INSTALL_DATA) $< $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h
 PREINSTALL_FILES += $(PROJECT_INCLUDE)/rtems/score/schedulerprioritysmpimpl.h

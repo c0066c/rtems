@@ -359,67 +359,69 @@ static inline void BSP_disable_crit_irq_at_siu( rtems_vector_number
 /*
  * This function enables a given siu interrupt
  */
-void bsp_interrupt_vector_enable( rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_enable( rtems_vector_number irqLine)
 {
-  int base_index = get_siu_irq_base_index( vector);
+  int base_index = get_siu_irq_base_index( irqLine);
 
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
-
-  if (is_siu_irq( vector)) {
+  if (is_siu_irq( irqLine)) {
     rtems_interrupt_level level;
 
     rtems_interrupt_disable( level);
 
     switch (base_index) {
       case BSP_PER_IRQ_LOWEST_OFFSET:
-        BSP_enable_per_irq_at_siu( vector);
+        BSP_enable_per_irq_at_siu( irqLine);
         break;
       case BSP_MAIN_IRQ_LOWEST_OFFSET:
-        BSP_enable_main_irq_at_siu( vector);
+        BSP_enable_main_irq_at_siu( irqLine);
         break;
       case BSP_CRIT_IRQ_LOWEST_OFFSET:
-        BSP_enable_crit_irq_at_siu( vector);
+        BSP_enable_crit_irq_at_siu( irqLine);
         break;
       default:
-        bsp_interrupt_assert(0);
-        break;
+        rtems_interrupt_enable( level);
+        printk( "No valid base index\n");
+        return RTEMS_INVALID_NUMBER;
     }
 
     rtems_interrupt_enable( level);
   }
+
+  return RTEMS_SUCCESSFUL;
 }
 
 /*
  * This function disables a given siu interrupt
  */
-void bsp_interrupt_vector_disable( rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_disable( rtems_vector_number irqLine)
 {
-  int base_index = get_siu_irq_base_index( vector);
+  int base_index = get_siu_irq_base_index( irqLine);
 
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
-
-  if (is_siu_irq( vector)) {
+  if (is_siu_irq( irqLine)) {
     rtems_interrupt_level level;
 
     rtems_interrupt_disable( level);
 
     switch (base_index) {
       case BSP_PER_IRQ_LOWEST_OFFSET:
-        BSP_disable_per_irq_at_siu( vector);
+        BSP_disable_per_irq_at_siu( irqLine);
         break;
       case BSP_MAIN_IRQ_LOWEST_OFFSET:
-        BSP_disable_main_irq_at_siu( vector);
+        BSP_disable_main_irq_at_siu( irqLine);
         break;
       case BSP_CRIT_IRQ_LOWEST_OFFSET:
-        BSP_disable_crit_irq_at_siu( vector);
+        BSP_disable_crit_irq_at_siu( irqLine);
         break;
       default:
-        bsp_interrupt_assert(0);
-        break;
+        rtems_interrupt_enable( level);
+        printk( "No valid base index\n");
+        return RTEMS_INVALID_NUMBER;
     }
 
     rtems_interrupt_enable( level);
   }
+
+  return RTEMS_SUCCESSFUL;
 }
 
 #if (BENCHMARK_IRQ_PROCESSING == 0)

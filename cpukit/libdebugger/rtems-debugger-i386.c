@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2016 Chris Johns <chrisj@rtems.org>.
- * All rights reserved.
+ * Copyright (c) 2016 Chris Johns <chrisj@rtems.org>.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -282,7 +281,7 @@ rtems_debugger_target_write_regs(rtems_debugger_thread* thread)
      * for threads blocked in the context switcher.
      */
     if (rtems_debugger_thread_flag(thread,
-                                   RTEMS_DEBUGGER_THREAD_FLAG_EXCEPTION)) {
+                                   RTEMS_DEBUGGER_THREAD_FLAG_DEBUGGING)) {
       CPU_Exception_frame* frame = thread->frame;
       frame->eax    = regs[REG_EAX];
       frame->ecx    = regs[REG_ECX];
@@ -398,21 +397,6 @@ rtems_debugger_target_exception_to_signal(CPU_Exception_frame* frame)
     break;
   }
   return sig;
-}
-
-int
-rtems_debugger_target_hwbreak_insert(void)
-{
-  /*
-   * Do nothing, load on exit of the exception handler.
-   */
-  return 0;
-}
-
-int
-rtems_debugger_target_hwbreak_remove(void)
-{
-  return 0;
 }
 
 int

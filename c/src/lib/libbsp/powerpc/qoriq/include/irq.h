@@ -26,7 +26,6 @@
 #include <bsp.h>
 #include <rtems/irq.h>
 #include <rtems/irq-extension.h>
-#include <rtems/score/processormask.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -373,14 +372,14 @@ rtems_status_code qoriq_pic_set_priority(
   int *old_priority
 );
 
-void bsp_interrupt_set_affinity(
+rtems_status_code qoriq_pic_set_affinity(
   rtems_vector_number vector,
-  const Processor_mask *affinity
+  uint32_t processor_index
 );
 
-void bsp_interrupt_get_affinity(
+rtems_status_code qoriq_pic_set_affinities(
   rtems_vector_number vector,
-  Processor_mask *affinity
+  uint32_t processor_affinities
 );
 
 /** @} */

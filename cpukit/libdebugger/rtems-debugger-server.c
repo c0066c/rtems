@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Chris Johns <chrisj@rtems.org>.
- * All rights reserved.
+ * Copyright (c) 2016 Chris Johns <chrisj@rtems.org>.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,15 +23,9 @@
  * SUCH DAMAGE.
  */
 
-#define RTEMS_DEBUGGER_VERBOSE_LOCK 0
-#define RTEMS_DEBUGGER_PRINT_PRINTK 1
-
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#include <rtems/bspIo.h>
-#include <rtems/score/smp.h>
 
 #include <rtems/rtems-debugger.h>
 #include <rtems/debugger/rtems-debugger-server.h>
@@ -57,15 +50,15 @@ typedef int (*rtems_debugger_command)(uint8_t* buffer, int size);
 
 typedef struct rtems_debugger_packet
 {
-  const char* const      label;
+  const char const*      label;
   rtems_debugger_command command;
 } rtems_debugger_packet;
 
 /**
  * Common error strings.
  */
-static const char* const r_OK = "OK";
-static const char* const r_E01 = "E01";
+static const char const* r_OK = "OK";
+static const char const* r_E01 = "E01";
 
 /*
  * Global Debugger.
@@ -80,59 +73,13 @@ static const char* const r_E01 = "E01";
  */
 rtems_debugger_server* rtems_debugger;
 
-/**
- * Print lock ot make the prints sequential. This is to debug the debugger in
- * SMP.
- */
-#if RTEMS_DEBUGGER_PRINT_PRINTK
-RTEMS_INTERRUPT_LOCK_DEFINE(static, printk_lock, "printk_lock")
-#endif
-
-void
-rtems_debugger_printk_lock(rtems_interrupt_lock_context* lock_context)
-{
-  rtems_interrupt_lock_acquire(&printk_lock, lock_context);
-}
-
-void
-rtems_debugger_printk_unlock(rtems_interrupt_lock_context* lock_context)
-{
-  rtems_interrupt_lock_release(&printk_lock, lock_context);
-}
-
-int
-rtems_debugger_clean_printf(const char* format, ...)
-{
-  int     len;
-  va_list ap;
-  va_start(ap, format);
-  if (RTEMS_DEBUGGER_PRINT_PRINTK) {
-    rtems_interrupt_lock_context lock_context;
-    rtems_debugger_printk_lock(&lock_context);
-    len = vprintk(format, ap);
-    rtems_debugger_printk_unlock(&lock_context);
-  }
-  else
-    len = rtems_vprintf(&rtems_debugger->printer, format, ap);
-  va_end(ap);
-  return len;
-}
-
 int
 rtems_debugger_printf(const char* format, ...)
 {
   int     len;
   va_list ap;
   va_start(ap, format);
-  if (RTEMS_DEBUGGER_PRINT_PRINTK) {
-    rtems_interrupt_lock_context lock_context;
-    rtems_debugger_printk_lock(&lock_context);
-    printk("[CPU:%d] ", (int) _SMP_Get_current_processor ());
-    len = vprintk(format, ap);
-    rtems_debugger_printk_unlock(&lock_context);
-  }
-  else
-    len = rtems_vprintf(&rtems_debugger->printer, format, ap);
+  len = rtems_vprintf(&rtems_debugger->printer, format, ap);
   va_end(ap);
   return len;
 }
@@ -211,31 +158,74 @@ thread_id_decode(const char* data, DB_UINT* pid, DB_UINT* tid)
 static inline bool
 check_pid(DB_UINT pid)
 {
-  return pid == 0 || rtems_debugger->pid == (pid_t) pid;
+  return pid == 0|| rtems_debugger->pid == (pid_t) pid;
 }
 
-void
+int
 rtems_debugger_lock(void)
 {
-  _Mutex_recursive_Acquire(&rtems_debugger->lock);
+  if (rtems_debugger->lock != 0) {
+    rtems_status_code sc;
+    sc = rtems_semaphore_obtain(rtems_debugger->lock, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    if (sc != RTEMS_SUCCESSFUL) {
+      rtems_debugger_printf("error: rtems-db: lock: %s\n",
+                            rtems_status_text(sc));
+      return -1;
+    }
+  }
+  return 0;
 }
 
-void
+int
 rtems_debugger_unlock(void)
 {
-  _Mutex_recursive_Release(&rtems_debugger->lock);
+  if (rtems_debugger->lock != 0) {
+    rtems_status_code sc;
+    sc = rtems_semaphore_release(rtems_debugger->lock);
+    if (sc != RTEMS_SUCCESSFUL) {
+      rtems_debugger_printf("error: rtems-db: unlock: %s\n",
+                            rtems_status_text(sc));
+      return -1;
+    }
+  }
+  return 0;
 }
 
 static int
 rtems_debugger_lock_create(void)
 {
-  _Mutex_recursive_Initialize_named(&rtems_debugger->lock, "DBlock");
+  #define LOCK_ATTRIBUTES \
+    RTEMS_PRIORITY | RTEMS_INHERIT_PRIORITY | RTEMS_BINARY_SEMAPHORE
+  rtems_status_code sc;
+  sc = rtems_semaphore_create(rtems_build_name('G', 'D', 'B', 's'),
+                              1,
+                              LOCK_ATTRIBUTES,
+                              0,
+                              &rtems_debugger->lock);
+  if (sc != RTEMS_SUCCESSFUL) {
+    rtems_debugger_printf("error: rtems-db: sema create: %s\n",
+                          rtems_status_text(sc));
+    errno = EIO;
+    return -1;
+  }
   return 0;
 }
 
 static int
 rtems_debugger_lock_destroy(void)
 {
+  rtems_debugger_lock();
+  if (rtems_debugger->lock != 0) {
+    rtems_status_code sc;
+    rtems_semaphore_release(rtems_debugger->lock);
+    sc = rtems_semaphore_delete(rtems_debugger->lock);
+    rtems_debugger->lock = 0;
+    if (sc != RTEMS_SUCCESSFUL) {
+      rtems_debugger_printf("error: rtems-db: sema delete: %s\n",
+                            rtems_status_text(sc));
+      return -1;
+    }
+  }
   return 0;
 }
 
@@ -343,19 +333,52 @@ rtems_debugger_connected(void)
 bool
 rtems_debugger_server_events_running(void)
 {
-  return rtems_debugger->events_running;
+  bool running;
+  rtems_debugger_lock();
+  running = rtems_debugger->events_running;
+  rtems_debugger_unlock();
+  return running;
 }
 
-void
-rtems_debugger_server_events_signal(void)
+int
+rtems_debugger_server_events_wake(void)
 {
-  _Condition_Signal(&rtems_debugger->server_cond);
+  rtems_status_code sc;
+  int               r = 0;
+  sc = rtems_event_send(rtems_debugger->events_task, RTEMS_EVENT_1);
+  if (sc != RTEMS_SUCCESSFUL) {
+    rtems_debugger_printf("error: rtems-db: event send: %s\n",
+                          rtems_status_text(sc));
+    errno = EIO;
+    r = -1;
+  }
+  return r;
 }
 
-static void
+static int
 rtems_debugger_server_events_wait(void)
 {
-  _Condition_Wait_recursive(&rtems_debugger->server_cond, &rtems_debugger->lock);
+  rtems_event_set   out = 0;
+  rtems_status_code sc;
+  int               r = 0;
+  rtems_debugger_unlock();
+  while (true) {
+    sc = rtems_event_receive(RTEMS_EVENT_1,
+                             RTEMS_EVENT_ALL | RTEMS_WAIT,
+                             RTEMS_NO_TIMEOUT,
+                             &out);
+    if (sc != RTEMS_SUCCESSFUL) {
+      rtems_debugger_printf("error: rtems-db: event receive: %s\n",
+                            rtems_status_text(sc));
+      errno = EIO;
+      r = -1;
+      break;
+    }
+    if (out == RTEMS_EVENT_1)
+      break;
+  }
+  rtems_debugger_lock();
+  return r;
 }
 
 static int
@@ -409,8 +432,8 @@ rtems_debugger_remote_send(void)
     size_t i = 0;
     rtems_debugger_printf("rtems-db: put:%4zu: ", rtems_debugger->output_level);
     while (i < rtems_debugger->output_level)
-      rtems_debugger_clean_printf("%c", (char) rtems_debugger->output[i++]);
-    rtems_debugger_clean_printf("\n");
+      rtems_debugger_printf("%c", (char) rtems_debugger->output[i++]);
+    rtems_debugger_printf("\n");
   }
 
   while (size) {
@@ -510,14 +533,14 @@ rtems_debugger_remote_packet_in(void)
       }
 
       if (rtems_debugger->remote_debug)
-        rtems_debugger_clean_printf("%c", c);
+        rtems_debugger_printf("%c", c);
 
       switch (state) {
       case 'H':
         switch (c) {
         case '+':
           if (rtems_debugger->remote_debug) {
-            rtems_debugger_clean_printf(" [[ACK%s]]\n",
+            rtems_debugger_printf(" [[ACK%s]]\n",
                                   rtems_debugger->ack_pending ? "" : "?");
             remote_debug_header = true;
           }
@@ -525,7 +548,7 @@ rtems_debugger_remote_packet_in(void)
           break;
         case '-':
           if (rtems_debugger->remote_debug) {
-            rtems_debugger_clean_printf(" [[NACK]]\n");
+            rtems_debugger_printf(" [[NACK]]\n");
             remote_debug_header = true;
           }
           /*
@@ -538,13 +561,13 @@ rtems_debugger_remote_packet_in(void)
           csum = 0;
           in = 0;
           if (junk && rtems_debugger->remote_debug) {
-            rtems_debugger_clean_printf("\b [[junk dropped]]\nrtems-db: get:   : $");
+            rtems_debugger_printf("\b [[junk dropped]]\nrtems-db: get:   : $");
             remote_debug_header = false;
           }
           break;
         case '\x3':
           if (rtems_debugger->remote_debug)
-            rtems_debugger_clean_printf("^C [[BREAK]]\n");
+            rtems_debugger_printf("^C [[BREAK]]\n");
           rtems_debugger->ack_pending = false;
           rtems_debugger->input[0] =  '^';
           rtems_debugger->input[1] =  'C';
@@ -563,7 +586,7 @@ rtems_debugger_remote_packet_in(void)
           csum = 0;
           in = 0;
           if (rtems_debugger->remote_debug) {
-            rtems_debugger_clean_printf("\n");
+            rtems_debugger_printf("\n");
             remote_debug_header = true;
           }
         }
@@ -590,12 +613,12 @@ rtems_debugger_remote_packet_in(void)
         if (csum == rx_csum) {
           state = 'F';
           if (rtems_debugger->remote_debug)
-            rtems_debugger_clean_printf("\n");
+            rtems_debugger_printf("\n");
           rtems_debugger_remote_send_ack();
         }
         else {
           if (rtems_debugger->remote_debug) {
-            rtems_debugger_clean_printf(" [[invalid checksum]]\n");
+            rtems_debugger_printf(" [[invalid checksum]]\n");
             remote_debug_header = true;
             rtems_debugger_remote_send_nack();
           }
@@ -604,7 +627,7 @@ rtems_debugger_remote_packet_in(void)
         break;
       case 'F':
           if (rtems_debugger->remote_debug)
-            rtems_debugger_clean_printf(" [[extra data: 0x%02x]]", (int) c);
+            rtems_debugger_printf(" [[extra data: 0x%02x]]", (int) c);
         break;
       default:
         rtems_debugger_printf("rtems-db: bad state\n");
@@ -787,9 +810,6 @@ remote_packet_dispatch(const rtems_debugger_packet* packet,
     if (strncmp(p->label,
                 (const char*) &buffer[0],
                 strlen(p->label)) == 0) {
-      if (rtems_debugger_server_flag(RTEMS_DEBUGGER_FLAG_VERBOSE_CMDS))
-        rtems_debugger_printf("rtems-db: cmd: %s [%d] '%s'\n",
-                              p->label, size, (const char*) buffer);
       r = p->command(buffer, size);
       break;
     }
@@ -884,7 +904,7 @@ remote_gq_thread_extra_info(uint8_t* buffer, int size)
     DB_UINT tid = 0;
     bool    extended;
     extended = thread_id_decode(comma + 1, &pid, &tid);
-    if (extended || check_pid(pid)) {
+    if (!extended || (extended && check_pid(pid))) {
       int r;
       r = rtems_debugger_thread_find_index(tid);
       if (r >= 0) {
@@ -934,7 +954,7 @@ remote_gq_supported(uint8_t* buffer, int size)
   p = strchr((const char*) buffer, ':');
   if (p != NULL)
     ++p;
-  while (p != NULL && *p != '\0') {
+  while (p != NULL && p != '\0') {
     bool  echo = false;
     char* sc;
     sc = strchr(p, ';');
@@ -1002,8 +1022,8 @@ remote_gq_supported(uint8_t* buffer, int size)
 static int
 remote_gq_attached(uint8_t* buffer, int size)
 {
-  const char* response = "1";
-  const char* colon = strchr((const char*) buffer, ':');
+  const char const* response = "1";
+  const char*       colon = strchr((const char*) buffer, ':');
   if (colon != NULL) {
     DB_UINT pid = hex_decode_uint((const uint8_t*) colon + 1);
     if ((pid_t) pid != rtems_debugger->pid)
@@ -1041,7 +1061,7 @@ remote_general_query(uint8_t* buffer, int size)
 static int
 remote_gs_non_stop(uint8_t* buffer, int size)
 {
-  const char* response = r_E01;
+  const char const* response = r_E01;
   char*       p = strchr((char*) buffer, ':');
   if (p != NULL) {
     ++p;
@@ -1153,7 +1173,6 @@ remote_v_continue(uint8_t* buffer, int size)
             if (r == 0)
               resume = true;
             break;
-          case 'S':
           case 's':
             if (thread != NULL) {
               r = rtems_debugger_thread_step(thread);
@@ -1183,7 +1202,6 @@ remote_v_continue(uint8_t* buffer, int size)
             }
             break;
           default:
-            rtems_debugger_printf("rtems-db: vCont: unkown action: %c\n", action);
             ok = false;
             break;
           }
@@ -1192,7 +1210,6 @@ remote_v_continue(uint8_t* buffer, int size)
         }
       }
       else {
-        rtems_debugger_printf("rtems-db: vCont: no colon\n");
         ok = false;
       }
       semi = strchr(semi + 1, ';');
@@ -1240,8 +1257,8 @@ remote_v_packets(uint8_t* buffer, int size)
 static int
 remote_thread_select(uint8_t* buffer, int size)
 {
-  const char* response = r_OK;
-  int*        index = NULL;
+  const char const* response = r_OK;
+  int*              index = NULL;
 
   if (buffer[1] == 'g')
     index = &rtems_debugger->threads->selector_gen;
@@ -1282,10 +1299,10 @@ remote_thread_select(uint8_t* buffer, int size)
 static int
 remote_thread_alive(uint8_t* buffer, int size)
 {
-  const char* response = r_E01;
-  DB_UINT     pid = 0;
-  DB_UINT     tid = 0;
-  bool        extended;
+  const char const* response = r_E01;
+  DB_UINT           pid = 0;
+  DB_UINT           tid = 0;
+  bool              extended;
   extended = thread_id_decode((const char*) &buffer[1], &pid, &tid);
   if (!extended || (extended && check_pid(pid))) {
     int r;
@@ -1406,7 +1423,7 @@ static int
 remote_write_reg(uint8_t* buffer, int size)
 {
   rtems_debugger_threads* threads = rtems_debugger->threads;
-  const char*             response = r_E01;
+  const char const*       response = r_E01;
   if (threads->selector_gen >= 0
       && threads->selector_gen < (int) threads->current.level) {
     const char* equals;
@@ -1470,9 +1487,9 @@ remote_read_memory(uint8_t* buffer, int size)
 static int
 remote_write_memory(uint8_t* buffer, int size)
 {
-  const char* response = r_E01;
-  const char* comma;
-  const char* colon;
+  const char const* response = r_E01;
+  const char*       comma;
+  const char*       colon;
   comma = strchr((const char*) buffer, ',');
   colon = strchr((const char*) buffer, ':');
   if (comma != NULL && colon != NULL) {
@@ -1667,7 +1684,9 @@ rtems_debugger_events(rtems_task_argument arg)
   rtems_debugger_target_enable();
 
   while (rtems_debugger_server_events_running()) {
-    rtems_debugger_server_events_wait();
+    r = rtems_debugger_server_events_wait();
+    if (r < 0)
+      break;
     if (!rtems_debugger_server_events_running())
       break;
     r = rtems_debugger_thread_system_suspend();
@@ -1748,7 +1767,7 @@ rtems_debugger_session(void)
   }
 
   rtems_debugger->events_running = false;
-  rtems_debugger_server_events_signal();
+  rtems_debugger_server_events_wake();
 
   rtems_debugger_unlock();
 
@@ -1818,8 +1837,6 @@ rtems_debugger_create(const char*          remote,
   rtems_debugger->pid = getpid();
   rtems_debugger->remote_debug = false;
 
-  rtems_chain_initialize_empty(&rtems_debugger->exception_threads);
-
   rtems_debugger->remote = rtems_debugger_remote_find(remote);
   if (rtems_debugger->remote== NULL) {
     rtems_printf(printer, "error: rtems-db: remote not found: %s\n", remote);
@@ -1834,7 +1851,6 @@ rtems_debugger_create(const char*          remote,
                  rtems_debugger->remote->name, strerror(errno));
     free(rtems_debugger);
     rtems_debugger = NULL;
-    return -1;
   }
 
   /*
@@ -1891,6 +1907,7 @@ rtems_debugger_main(rtems_task_argument arg)
 {
   int r;
 
+
   rtems_debugger_lock();
   rtems_debugger->server_running = true;
   rtems_debugger->server_finished = false;
@@ -1932,7 +1949,6 @@ rtems_debugger_start(const char*          remote,
   rtems_debugger_lock();
   rtems_debugger->server_running = false;
   rtems_debugger->server_finished = true;
-  _Condition_Initialize_named(&rtems_debugger->server_cond, "DBserver");
   rtems_debugger_unlock();
 
   r = rtems_debugger_task_create("DBSs",

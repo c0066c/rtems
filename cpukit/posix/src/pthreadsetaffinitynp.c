@@ -64,7 +64,7 @@ int pthread_setaffinity_np(
     POSIX_API_Control *api;
 
     api = the_thread->API_Extensions[ THREAD_API_POSIX ];
-    CPU_COPY( cpuset, api->Attributes.affinityset );
+    CPU_COPY( api->Attributes.affinityset, cpuset );
   }
 
   _Thread_State_release( the_thread, &lock_context );

@@ -19,7 +19,6 @@
 #endif
 
 #include <sys/param.h>
-#include <sys/filio.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>

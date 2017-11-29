@@ -25,6 +25,8 @@
 
 #include <libcpu/powerpc-utility.h>
 
+#define CACHE_LINE_SIZE 32
+
 #define WORD_SIZE 4
 
 #define WORD_MASK (WORD_SIZE - 1)
@@ -45,8 +47,8 @@ void *memcpy(void *dst_ptr, const void *src_ptr, size_t n)
     uint32_t *word_dst = (uint32_t *) dst - 1;
     const uint32_t *word_src = (const uint32_t *) src - 1;
 
-    if (n >= 2 * PPC_CACHE_ALIGNMENT - WORD_SIZE) {
-      while ((uintptr_t) (word_dst + 1) % PPC_CACHE_ALIGNMENT != 0) {
+    if (n >= 2 * CACHE_LINE_SIZE - WORD_SIZE) {
+      while ((uintptr_t) (word_dst + 1) % CACHE_LINE_SIZE != 0) {
         uint32_t tmp;
         __asm__ volatile (
           "lwzu %[tmp], 0x4(%[src])\n"
@@ -58,7 +60,7 @@ void *memcpy(void *dst_ptr, const void *src_ptr, size_t n)
         n -= WORD_SIZE;
       }
 
-      while (n >= PPC_CACHE_ALIGNMENT) {
+      while (n >= CACHE_LINE_SIZE) {
         uint32_t dst_offset = 4;
         uint32_t src_offset = 32 + 4;
         uint32_t tmp0;
@@ -93,7 +95,7 @@ void *memcpy(void *dst_ptr, const void *src_ptr, size_t n)
           : [src_offset] "r" (src_offset),
             [dst_offset] "r" (dst_offset)
         );
-        n -= PPC_CACHE_ALIGNMENT;
+        n -= CACHE_LINE_SIZE;
       }
     }
 

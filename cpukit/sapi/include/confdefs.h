@@ -780,7 +780,6 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
  *  - CONFIGURE_SCHEDULER_SIMPLE - Light-weight Priority Scheduler
  *  - CONFIGURE_SCHEDULER_SIMPLE_SMP - Simple SMP Priority Scheduler
  *  - CONFIGURE_SCHEDULER_EDF - EDF Scheduler
- *  - CONFIGURE_SCHEDULER_EDF_SMP - EDF SMP Scheduler
  *  - CONFIGURE_SCHEDULER_CBS - CBS Scheduler
  *  - CONFIGURE_SCHEDULER_USER  - user provided scheduler
  *
@@ -806,14 +805,13 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
     !defined(CONFIGURE_SCHEDULER_SIMPLE) && \
     !defined(CONFIGURE_SCHEDULER_SIMPLE_SMP) && \
     !defined(CONFIGURE_SCHEDULER_EDF) && \
-    !defined(CONFIGURE_SCHEDULER_EDF_SMP) && \
     !defined(CONFIGURE_SCHEDULER_CBS)
-  #if defined(RTEMS_SMP) && CONFIGURE_MAXIMUM_PROCESSORS > 1
+  #if CONFIGURE_MAXIMUM_PROCESSORS > 1
     /**
      * If no scheduler is specified in an SMP configuration, the
-     * EDF scheduler is default.
+     * priority scheduler is default.
      */
-    #define CONFIGURE_SCHEDULER_EDF_SMP
+    #define CONFIGURE_SCHEDULER_PRIORITY_SMP
   #else
     /**
      * If no scheduler is specified in a uniprocessor configuration, the
@@ -978,26 +976,6 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
     /** Configure the controls for this scheduler instance */
     #define CONFIGURE_SCHEDULER_CONTROLS \
       RTEMS_SCHEDULER_CONTROL_EDF(dflt, CONFIGURE_SCHEDULER_NAME)
-  #endif
-#endif
-
-/*
- * If the EDF SMP Scheduler is selected, then configure for it.
- */
-#if defined(CONFIGURE_SCHEDULER_EDF_SMP)
-  #if !defined(CONFIGURE_SCHEDULER_NAME)
-    /** Configure the name of the scheduler instance */
-    #define CONFIGURE_SCHEDULER_NAME rtems_build_name('M', 'E', 'D', 'F')
-  #endif
-
-  #if !defined(CONFIGURE_SCHEDULER_CONTROLS)
-    /** Configure the context needed by the scheduler instance */
-    #define CONFIGURE_SCHEDULER_CONTEXT \
-      RTEMS_SCHEDULER_CONTEXT_EDF_SMP(dflt, CONFIGURE_MAXIMUM_PROCESSORS)
-
-    /** Configure the controls for this scheduler instance */
-    #define CONFIGURE_SCHEDULER_CONTROLS \
-      RTEMS_SCHEDULER_CONTROL_EDF_SMP(dflt, CONFIGURE_SCHEDULER_NAME)
   #endif
 #endif
 
@@ -3173,9 +3151,6 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
     #ifdef CONFIGURE_SCHEDULER_EDF
       Scheduler_EDF_Node EDF;
     #endif
-    #ifdef CONFIGURE_SCHEDULER_EDF_SMP
-      Scheduler_EDF_SMP_Node EDF_SMP;
-    #endif
     #ifdef CONFIGURE_SCHEDULER_PRIORITY
       Scheduler_priority_Node Priority;
     #endif
@@ -3344,13 +3319,6 @@ extern rtems_initialization_tasks_table Initialization_tasks[];
       true,
     #else
       false,
-    #endif
-    #ifdef RTEMS_SMP
-      #ifdef _CONFIGURE_SMP_APPLICATION
-        true,
-      #else
-        false,
-      #endif
     #endif
     _CONFIGURE_NUMBER_OF_INITIAL_EXTENSIONS,   /* number of static extensions */
     CONFIGURE_INITIAL_EXTENSION_TABLE,        /* pointer to static extensions */

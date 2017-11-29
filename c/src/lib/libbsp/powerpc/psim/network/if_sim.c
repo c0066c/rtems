@@ -31,7 +31,6 @@
 #endif
 
 #include <rtems/rtems_bsdnet.h>
-#include <sys/param.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>

@@ -50,6 +50,11 @@ static lpc32xx_irq_fields lpc32xx_irq_priority_masks [LPC32XX_IRQ_PRIORITY_COUNT
 
 static lpc32xx_irq_fields lpc32xx_irq_enable;
 
+static inline bool lpc32xx_irq_is_valid(rtems_vector_number vector)
+{
+  return vector <= BSP_INTERRUPT_VECTOR_MAX;
+}
+
 static inline bool lpc32xx_irq_priority_is_valid(unsigned priority)
 {
   return priority <= LPC32XX_IRQ_PRIORITY_LOWEST;
@@ -125,7 +130,7 @@ static inline unsigned lpc32xx_irq_get_index(uint32_t val)
 
 void lpc32xx_irq_set_priority(rtems_vector_number vector, unsigned priority)
 {
-  if (bsp_interrupt_is_valid_vector(vector)) {
+  if (lpc32xx_irq_is_valid(vector)) {
     rtems_interrupt_level level;
     unsigned i = 0;
 
@@ -151,7 +156,7 @@ void lpc32xx_irq_set_priority(rtems_vector_number vector, unsigned priority)
 
 unsigned lpc32xx_irq_get_priority(rtems_vector_number vector)
 {
-  if (bsp_interrupt_is_valid_vector(vector)) {
+  if (lpc32xx_irq_is_valid(vector)) {
     return lpc32xx_irq_priority_table [vector];
   } else {
     return LPC32XX_IRQ_PRIORITY_LOWEST;
@@ -160,7 +165,7 @@ unsigned lpc32xx_irq_get_priority(rtems_vector_number vector)
 
 void lpc32xx_irq_set_activation_polarity(rtems_vector_number vector, lpc32xx_irq_activation_polarity activation_polarity)
 {
-  if (bsp_interrupt_is_valid_vector(vector)) {
+  if (lpc32xx_irq_is_valid(vector)) {
     rtems_interrupt_level level;
 
     rtems_interrupt_disable(level);
@@ -175,7 +180,7 @@ void lpc32xx_irq_set_activation_polarity(rtems_vector_number vector, lpc32xx_irq
 
 lpc32xx_irq_activation_polarity lpc32xx_irq_get_activation_polarity(rtems_vector_number vector)
 {
-  if (bsp_interrupt_is_valid_vector(vector)) {
+  if (lpc32xx_irq_is_valid(vector)) {
     if (lpc32xx_irq_is_bit_set_in_register(vector, LPC32XX_IRQ_OFFSET_APR)) {
       return LPC32XX_IRQ_ACTIVE_HIGH_OR_RISING_EDGE;
     } else {
@@ -188,7 +193,7 @@ lpc32xx_irq_activation_polarity lpc32xx_irq_get_activation_polarity(rtems_vector
 
 void lpc32xx_irq_set_activation_type(rtems_vector_number vector, lpc32xx_irq_activation_type activation_type)
 {
-  if (bsp_interrupt_is_valid_vector(vector)) {
+  if (lpc32xx_irq_is_valid(vector)) {
     rtems_interrupt_level level;
 
     rtems_interrupt_disable(level);
@@ -203,7 +208,7 @@ void lpc32xx_irq_set_activation_type(rtems_vector_number vector, lpc32xx_irq_act
 
 lpc32xx_irq_activation_type lpc32xx_irq_get_activation_type(rtems_vector_number vector)
 {
-  if (bsp_interrupt_is_valid_vector(vector)) {
+  if (lpc32xx_irq_is_valid(vector)) {
     if (lpc32xx_irq_is_bit_set_in_register(vector, LPC32XX_IRQ_OFFSET_ATR)) {
       return LPC32XX_IRQ_EDGE_SENSITIVE;
     } else {
@@ -260,28 +265,32 @@ void bsp_interrupt_dispatch(void)
   lpc32xx.sic_2.er = er_sic_2 & lpc32xx_irq_enable.field.sic_2;
 }
 
-void bsp_interrupt_vector_enable(rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_enable(rtems_vector_number vector)
 {
-  rtems_interrupt_level level;
+  if (lpc32xx_irq_is_valid(vector)) {
+    rtems_interrupt_level level;
 
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
+    rtems_interrupt_disable(level);
+    lpc32xx_irq_set_bit_in_register(vector, LPC32XX_IRQ_OFFSET_ER);
+    lpc32xx_irq_set_bit_in_field(vector, &lpc32xx_irq_enable);
+    rtems_interrupt_enable(level);
+  }
 
-  rtems_interrupt_disable(level);
-  lpc32xx_irq_set_bit_in_register(vector, LPC32XX_IRQ_OFFSET_ER);
-  lpc32xx_irq_set_bit_in_field(vector, &lpc32xx_irq_enable);
-  rtems_interrupt_enable(level);
+  return RTEMS_SUCCESSFUL;
 }
 
-void bsp_interrupt_vector_disable(rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_disable(rtems_vector_number vector)
 {
-  rtems_interrupt_level level;
+  if (lpc32xx_irq_is_valid(vector)) {
+    rtems_interrupt_level level;
 
-  bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
+    rtems_interrupt_disable(level);
+    lpc32xx_irq_clear_bit_in_field(vector, &lpc32xx_irq_enable);
+    lpc32xx_irq_clear_bit_in_register(vector, LPC32XX_IRQ_OFFSET_ER);
+    rtems_interrupt_enable(level);
+  }
 
-  rtems_interrupt_disable(level);
-  lpc32xx_irq_clear_bit_in_field(vector, &lpc32xx_irq_enable);
-  lpc32xx_irq_clear_bit_in_register(vector, LPC32XX_IRQ_OFFSET_ER);
-  rtems_interrupt_enable(level);
+  return RTEMS_SUCCESSFUL;
 }
 
 void lpc32xx_set_exception_handler(

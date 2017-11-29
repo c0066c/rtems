@@ -24,6 +24,8 @@
 #include <rtems/score/isrlock.h>
 #include <rtems/score/percpu.h>
 #include <rtems/score/rbtreeimpl.h>
+#include <rtems/score/bucket.h>
+#include <rtems/score/bucketimpl.h>
 
 #include <sys/types.h>
 #include <sys/timespec.h>
@@ -269,18 +271,17 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Next_first(
   Watchdog_Control *the_watchdog
 )
 {
-  RBTree_Node *node = _RBTree_Right( &the_watchdog->Node.RBTree );
-
-  if ( node != NULL ) {
-    RBTree_Node *left;
-
-    while ( ( left = _RBTree_Left( node ) ) != NULL ) {
-      node = left;
-    }
-
-    header->first = node;
+  int tick = _Watchdog_Ticks_since_boot;
+  int tick = tick%64;
+  int high_priority = bucketsort.bitmap%tick;
+  int low_priority = bucketsort.bitmap/tick;
+  if(high_priority != 0)
+  {
+    int next = log(high_priority);
+    header->first = bucketsort[next].element[amount_elements];
   } else {
-    header->first = _RBTree_Parent( &the_watchdog->Node.RBTree );
+    int next = log(low_priority);
+    header->first = bucket[next].element[amount_elements];
   }
 }
 

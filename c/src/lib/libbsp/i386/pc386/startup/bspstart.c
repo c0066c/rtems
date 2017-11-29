@@ -49,6 +49,7 @@ rtems_pci_config_t BSP_pci_configuration = {
  */
 static void bsp_pci_initialize_helper(void)
 {
+#if (BSP_IS_EDISON == 0)
   const pci_config_access_functions *pci_accessors;
 
   pci_accessors = pci_bios_initialize();
@@ -66,6 +67,7 @@ static void bsp_pci_initialize_helper(void)
   }
 
   printk("PCI bus: could not initialize PCI BIOS interface\n");
+#endif
 }
 
 /*-------------------------------------------------------------------------+
@@ -80,10 +82,17 @@ static void bsp_start_default( void )
   /*
    * Turn off watchdog
    */
+#if (BSP_IS_EDISON == 1)
+  volatile uint32_t *edison_wd = (volatile uint32_t *)0xff009000;
+  *edison_wd = 0x11f8;
+#endif
+
   /*
    * Calibrate variable for 1ms-loop (see timer.c)
    */
+#if (BSP_IS_EDISON == 0)
   Calibrate_loop_1ms();
+#endif
 
   /*
    * Init rtems interrupt management
@@ -127,7 +136,9 @@ static void bsp_start_default( void )
    */
   pc386_parse_console_arguments();
 
+#if (BSP_IS_EDISON == 0)
   Clock_driver_install_handler();
+#endif
 
 #if BSP_ENABLE_IDE
   bsp_ide_cmdline_init();

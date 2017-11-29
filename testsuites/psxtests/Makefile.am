@@ -85,7 +85,6 @@ _SUBDIRS += psxrwlock01
 _SUBDIRS += psxsem01
 _SUBDIRS += psxshm01
 _SUBDIRS += psxshm02
-_SUBDIRS += psxmmap01
 _SUBDIRS += psxsignal01
 _SUBDIRS += psxsignal02
 _SUBDIRS += psxsignal03

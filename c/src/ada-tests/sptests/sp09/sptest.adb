@@ -22,6 +22,7 @@ with INTERFACES; use INTERFACES;
 with TEST_SUPPORT;
 with TEXT_IO;
 with RTEMS.CLOCK;
+with RTEMS.DEBUG;
 with RTEMS.EVENT;
 with RTEMS.MESSAGE_QUEUE;
 with RTEMS.PARTITION;
@@ -2383,6 +2384,11 @@ package body SPTEST is
          "TA1 - region_return_segment - INVALID_ADDRESS"
       );
 
+      -- internal heap errors, subject to change if heap code changes
+
+      TEXT_IO.PUT_LINE( "TA1 - debug_disable - DEBUG_REGION" );
+      RTEMS.DEBUG.DISABLE( RTEMS.DEBUG.REGION );
+
 --    OFFSET := 0;
 --    GOOD_BACK_FLAG := 0;
 --    GOOD_FRONT_FLAG := 0;
@@ -2442,6 +2448,9 @@ package body SPTEST is
 --      );
 --
 --      SPTEST.REGION_GOOD_AREA( OFFSET - 2 ) := GOOD_BACK_FLAG;
+
+      TEXT_IO.PUT_LINE( "TA1 - debug_enable - DEBUG_REGION" );
+      RTEMS.DEBUG.ENABLE( RTEMS.DEBUG.REGION );
 
       RTEMS.REGION.EXTEND(
          100,
@@ -2782,7 +2791,7 @@ package body SPTEST is
       );
       TEXT_IO.NEW_LINE;
 
-      RTEMS.CLOCK.GET_TOD( TIME, STATUS );
+      RTEMS.CLOCK.GET( RTEMS.CLOCK.GET_TOD, TIME'ADDRESS, STATUS );
       TEST_SUPPORT.DIRECTIVE_FAILED( STATUS, "CLOCK_GET SUCCESSFUL" );
       TEST_SUPPORT.PRINT_TIME( "TA1 - clock_get       - ", TIME, "" );
       TEXT_IO.NEW_LINE;
@@ -2906,7 +2915,7 @@ package body SPTEST is
       );
       TEXT_IO.NEW_LINE;
 
-      RTEMS.CLOCK.GET_TOD( TIME, STATUS );
+      RTEMS.CLOCK.GET( RTEMS.CLOCK.GET_TOD, TIME'ADDRESS, STATUS );
       TEST_SUPPORT.DIRECTIVE_FAILED( STATUS, "clock_set" );
       TEST_SUPPORT.PRINT_TIME( "TA1 - clock_get       - ", TIME, "" );
       TEXT_IO.NEW_LINE;

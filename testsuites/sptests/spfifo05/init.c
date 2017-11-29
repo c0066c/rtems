@@ -16,7 +16,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -271,9 +270,9 @@ rtems_task Init(
 
 #define CONFIGURE_MAXIMUM_BARRIERS 2
 
+#define CONFIGURE_INIT
 #define CONFIGURE_MAXIMUM_FIFOS 1
 
-#define CONFIGURE_DISABLE_SMP_CONFIGURATION
 
 #define CONFIGURE_INIT
 #include <rtems/confdefs.h>

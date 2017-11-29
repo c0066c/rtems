@@ -44,7 +44,7 @@
 #include <sys/socketvar.h>
 #include <sys/protosw.h>
 #include <sys/kernel.h>
-#include <sys/sockio.h>
+#include <sys/ioctl.h>
 #include <errno.h>
 #include <sys/syslog.h>
 #include <sys/sysctl.h>
@@ -54,9 +54,6 @@
 #include <net/if_types.h>
 #include <net/if_var.h>
 #include <net/radix.h>
-#ifdef __rtems__
-#include <rtems/rtems_bsdnet.h>
-#endif /* __rtems__ */
 
 /*
  * System initialization
@@ -481,7 +478,6 @@ ifunit(char *name)
 int
 ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 {
-	struct rtems_tap_ifreq *tr;
 	struct ifnet *ifp;
 	struct ifreq *ifr;
 	int error;
@@ -492,7 +488,6 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 	case OSIOCGIFCONF:
 		return (ifconf(cmd, data));
 	}
-	tr = (struct rtems_tap_ifreq *)data;
 	ifr = (struct ifreq *)data;
 	ifp = ifunit(ifr->ifr_name);
 	if (ifp == 0)
@@ -665,11 +660,11 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 	 * RTEMS additions for setting/getting `tap' function
 	 */
 	case SIOCSIFTAP:
-		ifp->if_tap = tr->ifr_tap;
+		ifp->if_tap = ifr->ifr_tap;
 		return 0;
 
 	case SIOCGIFTAP:
-		tr->ifr_tap = ifp->if_tap;
+		ifr->ifr_tap = ifp->if_tap;
 		return 0;
 	}
 	return (0);

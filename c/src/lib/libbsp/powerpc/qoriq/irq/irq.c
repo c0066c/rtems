@@ -147,46 +147,56 @@ rtems_status_code qoriq_pic_set_priority(
 	return sc;
 }
 
-void bsp_interrupt_set_affinity(
+rtems_status_code qoriq_pic_set_affinities(
 	rtems_vector_number vector,
-	const Processor_mask *affinity
+	uint32_t processor_affinities
 )
 {
-	volatile qoriq_pic_src_cfg *src_cfg = get_src_cfg(vector);
+	rtems_status_code sc = RTEMS_SUCCESSFUL;
 
-	src_cfg->dr = _Processor_mask_To_uint32_t(affinity, 0);
+	if (bsp_interrupt_is_valid_vector(vector)) {
+		volatile qoriq_pic_src_cfg *src_cfg = get_src_cfg(vector);
+
+		src_cfg->dr = processor_affinities;
+	} else {
+		sc = RTEMS_INVALID_ID;
+	}
+
+	return sc;
 }
 
-void bsp_interrupt_get_affinity(
+rtems_status_code qoriq_pic_set_affinity(
 	rtems_vector_number vector,
-	Processor_mask *affinity
+	uint32_t processor_index
 )
 {
-	volatile qoriq_pic_src_cfg *src_cfg = get_src_cfg(vector);
-
-	_Processor_mask_From_uint32_t(affinity, src_cfg->dr, 0);
+	return qoriq_pic_set_affinities(vector, BSP_BIT32(processor_index));
 }
 
-static void pic_vector_enable(rtems_vector_number vector, uint32_t msk)
+static rtems_status_code pic_vector_enable(rtems_vector_number vector, uint32_t msk)
 {
-	volatile qoriq_pic_src_cfg *src_cfg = get_src_cfg(vector);
-	rtems_interrupt_lock_context lock_context;
+	rtems_status_code sc = RTEMS_SUCCESSFUL;
 
-	bsp_interrupt_assert(bsp_interrupt_is_valid_vector(vector));
+	if (bsp_interrupt_is_valid_vector(vector)) {
+		volatile qoriq_pic_src_cfg *src_cfg = get_src_cfg(vector);
+		rtems_interrupt_lock_context lock_context;
 
-	rtems_interrupt_lock_acquire(&lock, &lock_context);
-	src_cfg->vpr = (src_cfg->vpr & ~VPR_MSK) | msk;
-	rtems_interrupt_lock_release(&lock, &lock_context);
+		rtems_interrupt_lock_acquire(&lock, &lock_context);
+		src_cfg->vpr = (src_cfg->vpr & ~VPR_MSK) | msk;
+		rtems_interrupt_lock_release(&lock, &lock_context);
+	}
+
+	return sc;
 }
 
-void bsp_interrupt_vector_enable(rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_enable(rtems_vector_number vector)
 {
-	pic_vector_enable(vector, 0);
+	return pic_vector_enable(vector, 0);
 }
 
-void bsp_interrupt_vector_disable(rtems_vector_number vector)
+rtems_status_code bsp_interrupt_vector_disable(rtems_vector_number vector)
 {
-	pic_vector_enable(vector, VPR_MSK);
+	return pic_vector_enable(vector, VPR_MSK);
 }
 
 static void qoriq_interrupt_dispatch(void)

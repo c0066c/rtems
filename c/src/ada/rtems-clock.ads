@@ -66,6 +66,11 @@ package RTEMS.Clock is
 
    function Get_Ticks_Since_Boot
    return RTEMS.Interval;
+   pragma Import (
+      C,
+      Get_Ticks_Since_Boot,
+      "rtems_clock_get_ticks_since_boot"
+   );
 
    procedure Get_Uptime (
       Uptime :    out RTEMS.Timespec;

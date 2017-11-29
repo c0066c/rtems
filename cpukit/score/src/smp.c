@@ -97,10 +97,11 @@ static void _SMP_Start_processors( uint32_t cpu_count )
       scheduler = assignment->scheduler;
       context = _Scheduler_Get_context( scheduler );
 
-      _Processor_mask_Set( &_SMP_Online_processors, cpu_index );
-      _Processor_mask_Set( &context->Processors, cpu_index );
+      ++context->processor_count;
       cpu->Scheduler.control = scheduler;
       cpu->Scheduler.context = context;
+
+      _Processor_mask_Set( _SMP_Online_processors, cpu_index );
     }
   }
 }
@@ -216,7 +217,7 @@ void _SMP_Send_message_broadcast( unsigned long message )
   for ( cpu_index = 0 ; cpu_index < cpu_count ; ++cpu_index ) {
     if (
       cpu_index != cpu_index_self
-        && _Processor_mask_Is_set( &_SMP_Online_processors, cpu_index )
+        && _Processor_mask_Is_set( _SMP_Online_processors, cpu_index )
     ) {
       _SMP_Send_message( cpu_index, message );
     }
@@ -224,8 +225,8 @@ void _SMP_Send_message_broadcast( unsigned long message )
 }
 
 void _SMP_Send_message_multicast(
-  const Processor_mask *targets,
-  unsigned long         message
+  const Processor_mask targets,
+  unsigned long        message
 )
 {
   uint32_t cpu_count = _SMP_Get_processor_count();
