@@ -1,11 +1,20 @@
+#ifndef _RTEMS_SCORE_BUCKETIMPL_H
+#define _RTEMS_SCROE_BUCKETIMPL_H
+
+
 #include <limits.h>
 #include <rtems/score/bucket.h>
 
 uint bitmap;
 Bucket buckets[64];
+int scheduled_position;
 
-
-void _Bucket_insert(uint position, watchdog the_watchdog)
+void _Bucket_Initialize()
+{
+  bitmap=0;
+  scheduled_position=0;
+}
+void _Bucket_insert(uint position, Watchdog_Control  the_watchdog)
 {
       // insert;
          buckets[position].amount_elements++;
@@ -37,11 +46,14 @@ Watchdog_Control _Bucket_next_first()
     {
       int next = log(high_priority);
       int amount=buckets[next].amount_elements;
-      return buckets[next].element[amount];
+      scheduled_position=next;
+      return buckets[next].elements[amount];
     } else {
       int next = log(low_priority);
       int amount=buckets[next].amount_elements;
-      return buckets[next].element[amount];
+      scheduled_position=next;
+      return buckets[next].elements[amount];
     }
 
+#endif
                       /* end of include file *

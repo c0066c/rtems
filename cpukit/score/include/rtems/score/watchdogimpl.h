@@ -96,7 +96,7 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Header_initialize(
   Watchdog_Header *header
 )
 {
-  _RBTree_Initialize_empty( &header->Watchdogs );
+  _Bucket_Initialize_empty();
   header->first = NULL;
 }
 
@@ -119,7 +119,7 @@ RTEMS_INLINE_ROUTINE Watchdog_State _Watchdog_Get_state(
   const Watchdog_Control *the_watchdog
 )
 {
-  return RB_COLOR( &the_watchdog->Node.RBTree, Node );
+    WATCHDOG_SCHEDULED_BLACK;
 }
 
 RTEMS_INLINE_ROUTINE void _Watchdog_Set_state(
@@ -127,7 +127,7 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Set_state(
   Watchdog_State    state
 )
 {
-  RB_COLOR( &the_watchdog->Node.RBTree, Node ) = state;
+  
 }
 
 RTEMS_INLINE_ROUTINE Per_CPU_Control *_Watchdog_Get_CPU(
