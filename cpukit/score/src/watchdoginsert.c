@@ -68,6 +68,7 @@ void _Watchdog_Insert(
   bucket_position = bucket_position + expire;
   bucket_position = 64 - (bucket_position % 64);
   
-  _Bucket_insert(bucket_position, the_watchdog); 
+  _Bucket_insert(bucket_position, the_watchdog);
+ _Watchdog_Next_first( header, the_watchdog );
 
 }

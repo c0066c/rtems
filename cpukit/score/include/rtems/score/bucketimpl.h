@@ -1,35 +1,47 @@
 #include <limits.h>
 #include <rtems/score/bucket.h>
-Bucketsort buckets;
 
+uint bitmap;
+Bucket buckets[64];
 
-void _Bucket_Initialize(
-          Bucket_Control *the_bucket,
-            void          *starting_address
-        )
-{
-
-}
 
 void _Bucket_insert(uint position, watchdog the_watchdog)
 {
       // insert;
-         bucket[position].amount_elements++;
-           bucket[position].elements[bucket[position].amount_elements] = the_watchdog;
+         buckets[position].amount_elements++;
+           buckets[position].elements[buckets[position].amount_elements] = the_watchdog;
       
              //updating bitmap
                
                 bitmap= bitmap ||2^position;
-                  
+               
                   }
-      
-                  void _Bucket_Remove_Scheduled()
+    
+        void _Bucket_Remove_Scheduled()
                    {
-                    buckets.bucket[scheduled_position].amount_elements--;
-                     if(buckets.bucket[scheduled_position].amount_elements==0)
+                    buckets[scheduled_position].amount_elements--;
+                     if(buckets[scheduled_position].amount_elements==0)
                       {
                       int max=INT_MAX;
-                      buckets.bitmap=max-2^(scheduled_position)&& bucketsort.maxbitmap;
+                      bitmap=max-2^(scheduled_position)&& bitmap;
                        }
                         }
+
+Watchdog_Control _Bucket_next_first()
+{
+  int tick = _Watchdog_Ticks_since_boot;
+    int tick = tick%64;
+    int high_priority = bitmap%tick;
+    int low_priority = bitmap/tick;
+    if(high_priority != 0)
+    {
+      int next = log(high_priority);
+      int amount=buckets[next].amount_elements;
+      return buckets[next].element[amount];
+    } else {
+      int next = log(low_priority);
+      int amount=buckets[next].amount_elements;
+      return buckets[next].element[amount];
+    }
+
                       /* end of include file *

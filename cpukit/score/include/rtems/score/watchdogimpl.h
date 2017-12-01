@@ -68,7 +68,6 @@ typedef enum {
 } Watchdog_State;
 
 
-Bucketsort bucketsort;
 /**
  * @brief Watchdog initializer for static initialization.
  *
@@ -274,21 +273,7 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Next_first(
   Watchdog_Control *the_watchdog
 )
 {
-  int tick = _Watchdog_Ticks_since_boot;
-  int tick = tick%64;
-  int high_priority = bucketsort.bitmap%tick;
-  int low_priority = bucketsort.bitmap/tick;
-  if(high_priority != 0)
-  {
-    int next = log(high_priority);
-    int amount=bucketsort.bucket[next].amount_elements;
-    header->first = bucketsort.bucket[next].element[amount];
-  } else {
-    int next = log(low_priority);
-    int amount=bucketsort.bucket[next].amount_elements;
-    header->first = bucketsort.bucket[next].element[amount];
-  }
-}
+  header->first=_Bucket_next_first();}
 
 /**
  * @brief The bits necessary to store 1000000000 nanoseconds.
