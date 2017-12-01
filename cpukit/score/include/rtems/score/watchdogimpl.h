@@ -29,6 +29,7 @@
 
 #include <sys/types.h>
 #include <sys/timespec.h>
+#include <math.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,6 +67,8 @@ typedef enum {
   WATCHDOG_PENDING
 } Watchdog_State;
 
+
+Bucketsort bucketsort;
 /**
  * @brief Watchdog initializer for static initialization.
  *
@@ -278,10 +281,12 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Next_first(
   if(high_priority != 0)
   {
     int next = log(high_priority);
-    header->first = bucketsort[next].element[amount_elements];
+    int amount=bucketsort.bucket[next].amount_elements;
+    header->first = bucketsort.bucket[next].element[amount];
   } else {
     int next = log(low_priority);
-    header->first = bucket[next].element[amount_elements];
+    int amount=bucketsort.bucket[next].amount_elements;
+    header->first = bucketsort.bucket[next].element[amount];
   }
 }
 
