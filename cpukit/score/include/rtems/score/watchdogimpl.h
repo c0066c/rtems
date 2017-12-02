@@ -96,8 +96,8 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Header_initialize(
   Watchdog_Header *header
 )
 {
-  _Bucket_Initialize_empty();
   header->first = NULL;
+  (void) header;
 }
 
 RTEMS_INLINE_ROUTINE void _Watchdog_Header_destroy(

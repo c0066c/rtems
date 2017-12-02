@@ -4,17 +4,26 @@
 
 #include <limits.h>
 #include <rtems/score/bucket.h>
+#include <rtems/score/watchdog.h>
+#include <rtems/score/watchdogimpl.h>
 
-uint bitmap;
+#include <math.h>
+
+void _Bucket_instert(uint64_t position, Watchdog_Control the_watchdog);
+void _Bucket_remove_scheduled();
+Watchdog_Control _Bucket_next_first();
+void _Bucket_Initialize_empty();
+
+uint64_t bitmap;
 Bucket buckets[64];
 int scheduled_position;
 
-void _Bucket_Initialize()
+void _Bucket_Initialize_empty()
 {
   bitmap=0;
   scheduled_position=0;
 }
-void _Bucket_insert(uint position, Watchdog_Control  the_watchdog)
+void _Bucket_insert(uint64_t position, Watchdog_Control  the_watchdog)
 {
       // insert;
          buckets[position].amount_elements++;
@@ -26,20 +35,20 @@ void _Bucket_insert(uint position, Watchdog_Control  the_watchdog)
                
                   }
     
-        void _Bucket_Remove_Scheduled()
+        void _Bucket_remove_scheduled()
                    {
                     buckets[scheduled_position].amount_elements--;
                      if(buckets[scheduled_position].amount_elements==0)
                       {
                       int max=INT_MAX;
-                      bitmap=max-2^(scheduled_position)&& bitmap;
+                      bitmap=max-(2^(scheduled_position))&& bitmap;
                        }
                         }
 
 Watchdog_Control _Bucket_next_first()
 {
   int tick = _Watchdog_Ticks_since_boot;
-    int tick = tick%64;
+    tick = tick%64;
     int high_priority = bitmap%tick;
     int low_priority = bitmap/tick;
     if(high_priority != 0)
@@ -56,4 +65,4 @@ Watchdog_Control _Bucket_next_first()
     }
 
 #endif
-                      /* end of include file *
+                      /* end of include file */

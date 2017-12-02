@@ -1,5 +1,9 @@
-#ifndef _RTEMS_SCROE_BUCKET_H
+#ifndef _RTEMS_SCORE_BUCKET_H
 #define _RTEMS_SCORE_BUCKET_H
+
+#include <rtems/score/watchdog.h>
+#include <rtems/score/watchdogimpl.h>
+
 typedef struct
 {
 
