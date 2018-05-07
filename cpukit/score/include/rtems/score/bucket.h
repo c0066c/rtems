@@ -8,15 +8,7 @@
   #ifndef _RTEMS_SCORE_BUCKET_H
   #define _RTEMS_SCORE_BUCKET_H
 
-  #include <rtems/score/watchdog.h>
-  #include <rtems/score/watchdogimplh.>
 
-  typedef struct
-  {
-    int amount_elements;
-    Watchdog_Control first;
-    Watchdog_Control last;
-  }Bucket;
 
 
   #endif

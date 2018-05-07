@@ -19,7 +19,8 @@
 #endif
 
 #include <rtems/score/watchdogimpl.h>
-
+#include <rtems/score/bucketimpl.h>
+/*
 static void _Watchdog_Insert_fixup(
   Watchdog_Header   *header,
   Watchdog_Control  *the_watchdog,
@@ -123,3 +124,5 @@ void _Watchdog_Insert(
   _Watchdog_Insert_locked( header, the_watchdog, &lock_context );
   _Watchdog_Release( header, &lock_context );
 }
+
+*/

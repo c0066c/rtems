@@ -1,4 +1,4 @@
-/**
+#/**
  * @file
  *
  * @brief Inlined Routines in the Watchdog Handler
@@ -23,7 +23,7 @@
 #include <rtems/score/assert.h>
 #include <rtems/score/chainimpl.h>
 #include <rtems/score/isrlock.h>
-
+#include <rtems/score/bucketimpl.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
