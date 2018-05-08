@@ -99,7 +99,7 @@ typedef struct {
   /** This field is a Chain Node structure and allows this to be placed on
    *  chains for set management.
    */
-  Chain_Node                      Node; 
+  struct Element*                 Node; 
   /** This field is the state of the watchdog. */
   Watchdog_States                 state;
   /** This field is the initially requested interval. */

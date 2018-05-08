@@ -20,6 +20,7 @@
 
 #include <rtems/score/watchdogimpl.h>
 #include <rtems/score/bucketimpl.h>
+#define SIZE 30
 /*
 static void _Watchdog_Insert_fixup(
   Watchdog_Header   *header,
@@ -112,7 +113,7 @@ abort_insert:
     _Chain_Extract_unprotected( &iterator.Node );
   }
 }
-
+*/
 void _Watchdog_Insert(
   Watchdog_Header  *header,
   Watchdog_Control *the_watchdog
@@ -121,8 +122,20 @@ void _Watchdog_Insert(
   ISR_lock_Context lock_context;
 
   _Watchdog_Acquire( header, &lock_context );
-  _Watchdog_Insert_locked( header, the_watchdog, &lock_context );
+  _Watchdog_Insert_locked( the_watchdog);
   _Watchdog_Release( header, &lock_context );
 }
 
-*/
+
+
+
+
+void _Watchdog_Insert_locked (Watchdog_Control* the_watchdog)
+{
+    if(the_watchdog->state == WATCHDOG_INACTIVE)
+    {
+        the_watchdog->state = Watchdog_BEING_INSERTED;
+        int bucket= Watchdog_ticks_since_boot%SIZE;
+        the_watchdog->Node = InsertAtHead(the_watchdog, bucket)
+    }
+}
