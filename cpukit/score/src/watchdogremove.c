@@ -192,6 +192,7 @@ Watchdog_States _Watchdog_Remove(
 
   _Watchdog_Acquire( header, &lock_context );
   previous_state = the_watchdog->state;
+  int bucket;
   switch ( previous_state ) {
     case WATCHDOG_INACTIVE:
       break;
@@ -209,12 +210,12 @@ Watchdog_States _Watchdog_Remove(
       break;
 
     case WATCHDOG_ACTIVE:
-      
-      int bucket= (the_watchdog->start_time + the_watchdog->period) %SIZE;
-      RemoveElement(the_watchdog, bucket);
+      bucket= (the_watchdog->start_time + the_watchdog->initial) %SIZE;
+      RemoveElement(the_watchdog->Node, bucket);
       break;
   }
-
+  _Watchdog_Release( header, &lock_context );
+  return previous_state;
 }
 
 void _Watchdog_Tickle(
@@ -224,7 +225,8 @@ void _Watchdog_Tickle(
   ISR_lock_Context lock_context;
   
   _Watchdog_Acquire( header, &lock_context );
-  int bucket = SIZE-(Watchdog_Ticks_since_boot % SIZE);
+  int bucket;
+  bucket = SIZE-(_Watchdog_Ticks_since_boot % SIZE);
   Watchdog_Control* first = RemoveHead(bucket);
   while(first != NULL)
   {
@@ -254,4 +256,5 @@ void _Watchdog_Tickle(
 
   	Watchdog_Control* first = RemoveHead(bucket);  
   }
+  _Watchdog_Release( header, &lock_context );
 }

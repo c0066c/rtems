@@ -122,7 +122,7 @@ void _Watchdog_Insert(
   ISR_lock_Context lock_context;
 
   _Watchdog_Acquire( header, &lock_context );
-  _Watchdog_Insert_locked( header, the_watchdog, lock_context);
+  _Watchdog_Insert_locked( header, the_watchdog, &lock_context);
   _Watchdog_Release( header, &lock_context );
 }
 
@@ -134,23 +134,24 @@ void _Watchdog_Insert_locked (Watchdog_Header  *header,
   Watchdog_Control *the_watchdog,
   ISR_lock_Context *lock_context)
 {
+    int bucket;
     if(the_watchdog->state == WATCHDOG_INACTIVE)
     {
-        the_watchdog->state = Watchdog_BEING_INSERTED;
-        int bucket = Watchdog_Ticks_since_boot%SIZE;
+        the_watchdog->state = WATCHDOG_BEING_INSERTED;
+        bucket = _Watchdog_Ticks_since_boot%SIZE;
 	bucket = SIZE - bucket;
-	bucket = (SIZE + bucket - the_watchdog->period)%SIZE;
+	bucket = (SIZE + bucket - the_watchdog->initial)%SIZE;
         the_watchdog->Node = InsertAtHead(the_watchdog, bucket);
  	_Watchdog_Flash( header, lock_context );
 	if ( the_watchdog->state != WATCHDOG_BEING_INSERTED ) {
         	goto abort_insert;
       }
 	the_watchdog->start_time = _Watchdog_Ticks_since_boot;
-    	_Watchdog_Activate( the_watchdog )
+    	_Watchdog_Activate( the_watchdog );
     }
 
 
 abort_insert:
 
-	RemoveElement(the_watchdog, bucket);
+	RemoveElement(the_watchdog->Node, bucket);
 }

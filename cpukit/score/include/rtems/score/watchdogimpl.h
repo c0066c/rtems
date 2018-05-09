@@ -441,7 +441,8 @@ RTEMS_INLINE_ROUTINE Watchdog_Control *_Watchdog_Next(
 )
 {
 
-  return ( (Watchdog_Control *) the_watchdog->Node.next );
+  //return ( (Watchdog_Control *) the_watchdog->Node.next );
+  return NULL;
 
 }
 
@@ -455,7 +456,8 @@ RTEMS_INLINE_ROUTINE Watchdog_Control *_Watchdog_Previous(
 )
 {
 
-  return ( (Watchdog_Control *) the_watchdog->Node.previous );
+  //return ( (Watchdog_Control *) the_watchdog->Node.previous );
+  return NULL;
 
 }
 
@@ -469,7 +471,8 @@ RTEMS_INLINE_ROUTINE Watchdog_Control *_Watchdog_First(
 )
 {
 
-  return ( (Watchdog_Control *) _Chain_First( &header->Watchdogs ) );
+  //return ( (Watchdog_Control *) _Chain_First( &header->Watchdogs ) );
+  return NULL;
 
 }
 
@@ -483,15 +486,16 @@ RTEMS_INLINE_ROUTINE Watchdog_Control *_Watchdog_Last(
 )
 {
 
-  return ( (Watchdog_Control *) _Chain_Last( &header->Watchdogs ) );
-
+ // return ( (Watchdog_Control *) _Chain_Last( &header->Watchdogs ) );
+ return NULL;
 }
 
 RTEMS_INLINE_ROUTINE bool _Watchdog_Is_empty(
   const Watchdog_Header *header
 )
 {
-  return _Chain_Is_empty( &header->Watchdogs );
+  //return _Chain_Is_empty( &header->Watchdogs );
+  return NULL;
 }
 
 RTEMS_INLINE_ROUTINE void _Watchdog_Header_initialize(
@@ -499,8 +503,8 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Header_initialize(
 )
 {
   _ISR_lock_Initialize( &header->Lock, "Watchdog" );
-  _Chain_Initialize_empty( &header->Watchdogs );
-  _Chain_Initialize_empty( &header->Iterators );
+  //_Chain_Initialize_empty( &header->Watchdogs );
+  //_Chain_Initialize_empty( &header->Iterators );
 }
 
 /** @} */
