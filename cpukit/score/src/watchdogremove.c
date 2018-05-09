@@ -21,7 +21,7 @@
 #include <rtems/score/watchdogimpl.h>
 #include <rtems/score/assert.h>
 
-static void _Watchdog_Remove_it(
+*/static void _Watchdog_Remove_it(
   Watchdog_Header   *header,
   Watchdog_Control  *the_watchdog
 )
@@ -176,4 +176,82 @@ void _Watchdog_Tickle(
   }
 
   _Watchdog_Release( header, &lock_context );
+} */
+
+
+
+
+Watchdog_States _Watchdog_Remove(
+  Watchdog_Header  *header,
+  Watchdog_Control *the_watchdog
+)
+{
+  ISR_lock_Context  lock_context;
+  Watchdog_States   previous_state;
+  Watchdog_Interval now;
+
+  _Watchdog_Acquire( header, &lock_context );
+  previous_state = the_watchdog->state;
+  switch ( previous_state ) {
+    case WATCHDOG_INACTIVE:
+      break;
+
+    case WATCHDOG_BEING_INSERTED:
+
+      /*
+       *  It is not actually on the chain so just change the state and
+       *  the Insert operation we interrupted will be aborted.
+       */
+      the_watchdog->state = WATCHDOG_INACTIVE;
+      now = _Watchdog_Ticks_since_boot;
+      the_watchdog->start_time = now;
+      the_watchdog->stop_time = now;
+      break;
+
+    case WATCHDOG_ACTIVE:
+      
+      int bucket= (the_watchdog->start_time + the_watchdog->period) %SIZE;
+      RemoveElement(the_watchdog, bucket);
+      break;
+  }
+
+}
+
+void _Watchdog_Tickle(
+  Watchdog_Header *header
+)
+{
+  ISR_lock_Context lock_context;
+  
+  _Watchdog_Acquire( header, &lock_context );
+  int bucket = Watchdog_Ticks_since_boot % SIZE;
+  Watchdog_Control* first = RemoveHead(bucket);
+  while(first != NULL)
+  {
+	bool                            run;
+      	Watchdog_Service_routine_entry  routine;
+      	Objects_Id                      id;
+     	void                           *user_data;
+
+      	run = ( first->state == WATCHDOG_ACTIVE );
+
+
+
+	routine = first->routine;
+      id = first->id;
+      user_data = first->user_data;
+
+      _Watchdog_Release( header, &lock_context );
+
+      if ( run ) {
+        (*routine)( id, user_data );
+      }
+
+
+	_Watchdog_Acquire( header, &lock_context );
+
+
+
+  	Watchdog_Control* first = RemoveHead(bucket);  
+  }
 }
