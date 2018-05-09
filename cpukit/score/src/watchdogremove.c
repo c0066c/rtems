@@ -17,11 +17,11 @@
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
-
+#define SIZE 30
 #include <rtems/score/watchdogimpl.h>
 #include <rtems/score/assert.h>
 
-*/static void _Watchdog_Remove_it(
+/*static void _Watchdog_Remove_it(
   Watchdog_Header   *header,
   Watchdog_Control  *the_watchdog
 )
@@ -94,10 +94,10 @@ Watchdog_States _Watchdog_Remove(
 
     case WATCHDOG_BEING_INSERTED:
 
-      /*
+      *
        *  It is not actually on the chain so just change the state and
        *  the Insert operation we interrupted will be aborted.
-       */
+       *
       the_watchdog->state = WATCHDOG_INACTIVE;
       now = _Watchdog_Ticks_since_boot;
       the_watchdog->start_time = now;
@@ -128,7 +128,7 @@ void _Watchdog_Tickle(
     first = _Watchdog_First( header );
     delta = first->delta_interval;
 
-    /*
+    *
      * Although it is forbidden to insert watchdogs with a delta interval of
      * zero it is possible to observe watchdogs with a delta interval of zero
      * at this point.  For example lets have a watchdog chain of one watchdog
@@ -138,7 +138,7 @@ void _Watchdog_Tickle(
      * This will remove the watchdog on the chain and update the insert
      * iterator.  Now the insert operation continues and will insert the new
      * watchdog with a delta interval of zero.
-     */
+     *
     if ( delta > 0 ) {
       --delta;
       first->delta_interval = delta;
@@ -224,7 +224,7 @@ void _Watchdog_Tickle(
   ISR_lock_Context lock_context;
   
   _Watchdog_Acquire( header, &lock_context );
-  int bucket = Watchdog_Ticks_since_boot % SIZE;
+  int bucket = SIZE-(Watchdog_Ticks_since_boot % SIZE);
   Watchdog_Control* first = RemoveHead(bucket);
   while(first != NULL)
   {
