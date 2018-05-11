@@ -4,8 +4,8 @@
    */
 
 
-  #ifndef _RTEMS_SCORE_BUCKETIMPL_H
-  #define _RTEMS_SCORE_BUCKETIMPL_H
+#ifndef _RTEMS_SCORE_BUCKETIMPL_H
+#define _RTEMS_SCORE_BUCKETIMPL_H
 
 
 
@@ -34,8 +34,9 @@
 
   struct Element* head[30]; // global variable - pointer to head node.
 
+
   //Creates a new Element and returns pointer to it. 
-  struct Element* GetNewElement(Watchdog_Control* x) {
+  RTEMS_INLINE_ROUTINE struct Element* GetNewElement(Watchdog_Control* x) {
 	struct Element* newElement
 		= (struct Element*)malloc(sizeof(struct Element));
 	newElement->data = x;
@@ -45,7 +46,7 @@
   }
 
   //Inserts a Node at head of doubly linked list
-  struct Element* InsertAtHead(Watchdog_Control* x, int bucket) {
+  RTEMS_INLINE_ROUTINE struct Element* InsertAtHead(Watchdog_Control* x, int bucket) {
 	struct Element* newElement = GetNewElement(x);
 	if(head[bucket] == NULL) {
 		head[bucket] = newElement;
@@ -57,7 +58,7 @@
         return newElement;
   }
 
-  Watchdog_Control* RemoveHead(int bucket){
+ RTEMS_INLINE_ROUTINE  Watchdog_Control* RemoveHead(int bucket){
 	Watchdog_Control* top = NULL;
 	if(head[bucket]!= NULL){
 		struct Element* first = head[bucket];
@@ -73,7 +74,7 @@
 	return top;
   }
   
-  void RemoveElement (struct Element* x, int bucket){
+ RTEMS_INLINE_ROUTINE  void RemoveElement (struct Element* x, int bucket){
 
 
 	if(x==head[bucket])
@@ -97,5 +98,5 @@
 
 
 
-  #endif
+#endif
     /* end of include file*/ 
