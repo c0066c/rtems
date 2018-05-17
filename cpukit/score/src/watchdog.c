@@ -26,7 +26,7 @@
 void _Watchdog_Handler_initialization( void )
 {
   _Watchdog_Ticks_since_boot = 0;
-
+  _Bucket_Initialize();
   _Watchdog_Header_initialize( &_Watchdog_Ticks_header );
   _Watchdog_Header_initialize( &_Watchdog_Seconds_header );
 }

@@ -29,9 +29,9 @@ rtems_task Init(
 {
   rtems_status_code status;
   rtems_time_of_day time;
-
+ printf("start");
   TEST_BEGIN();
-
+  printf("after begin");
   time.year   = 1988;
   time.month  = 12;
   time.day    = 31;
@@ -39,14 +39,15 @@ rtems_task Init(
   time.minute = 0;
   time.second = 0;
   time.ticks  = 0;
-
+  printf("data assign");
   status = rtems_clock_set( &time );
+  printf("maybe here?");
   directive_failed( status, "clock get" );
-
+  printf("one step closer");
   Task_name[ 1 ] = rtems_build_name( 'T', 'A', '1', ' ' );
   Task_name[ 2 ] = rtems_build_name( 'T', 'A', '2', ' ' );
   Task_name[ 3 ] = rtems_build_name( 'T', 'A', '3', ' ' );
-
+  printf("before task create");
   status = rtems_task_create(
     Task_name[ 1 ], 1, RTEMS_MINIMUM_STACK_SIZE * 2, RTEMS_DEFAULT_MODES,
     RTEMS_DEFAULT_ATTRIBUTES, &Task_id[ 1 ]
@@ -64,7 +65,7 @@ rtems_task Init(
     RTEMS_DEFAULT_ATTRIBUTES, &Task_id[ 3 ]
   );
   directive_failed( status, "create 3" ); 
-
+  printf("before task start");
   status = rtems_task_start( Task_id[ 1 ], Test_task, 1 );
   directive_failed( status, "start 1" ); 
 

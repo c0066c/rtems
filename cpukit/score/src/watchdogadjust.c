@@ -25,9 +25,7 @@ void _Watchdog_Adjust_backward_locked(
   Watchdog_Interval  units
 )
 {
-  if ( !_Watchdog_Is_empty( header ) ) {
-     _Watchdog_First( header )->delta_interval += units;
-  }
+
 }
 
 void _Watchdog_Adjust_backward(
@@ -48,23 +46,7 @@ void _Watchdog_Adjust_forward_locked(
   ISR_lock_Context  *lock_context
 )
 {
-  while ( !_Watchdog_Is_empty( header ) && units > 0 ) {
-    Watchdog_Control *first = _Watchdog_First( header );
-
-    if ( units < first->delta_interval ) {
-      first->delta_interval -= units;
-      break;
-    } else {
-      units -= first->delta_interval;
-      first->delta_interval = 1;
-
-      _Watchdog_Release( header, lock_context );
-
-      _Watchdog_Tickle( header );
-
-      _Watchdog_Acquire( header, lock_context );
-    }
-  }
+  
 }
 
 void _Watchdog_Adjust_forward(

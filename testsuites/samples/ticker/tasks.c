@@ -32,7 +32,7 @@ rtems_task Test_task(
 
   status = rtems_task_ident( RTEMS_SELF, RTEMS_SEARCH_ALL_NODES, &tid );
   directive_failed( status, "task ident" ); 
-
+  printf("\n \n test1   ");
   task_index = task_number( tid );
   for ( ; ; ) {
     status = rtems_clock_get_tod( &time );
@@ -40,11 +40,14 @@ rtems_task Test_task(
       TEST_END();
       rtems_test_exit( 0 );
     }
+    printf("test2    ");
     put_name( Task_name[ task_index ], FALSE );
     print_time( " - rtems_clock_get_tod - ", &time, "\n" );
     status = rtems_task_wake_after(
       task_index * 5 * rtems_clock_get_ticks_per_second()
     );
+
+    printf("test3");
     directive_failed( status, "wake after" ); 
   }
 }

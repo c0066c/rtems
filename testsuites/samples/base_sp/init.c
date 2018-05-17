@@ -36,13 +36,16 @@ rtems_task Init(
 
   task_name = rtems_build_name( 'T', 'A', '1', ' ' );
 
+  printf( "Creating and starting an application task\n" );
   status = rtems_task_create( task_name, 1, RTEMS_MINIMUM_STACK_SIZE,
              RTEMS_INTERRUPT_LEVEL(0), RTEMS_DEFAULT_ATTRIBUTES, &tid );
   directive_failed( status, "create" ); 
 
+  printf( "Creating and starting an application task\n" );
   status = rtems_task_start( tid, Application_task, ARGUMENT );
   directive_failed( status, "start" ); 
 
+  printf( "Creating and starting an application task\n" );
   status = rtems_task_delete( RTEMS_SELF );
   directive_failed( status, "delete" ); 
 }

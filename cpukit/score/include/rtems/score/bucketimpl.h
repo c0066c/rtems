@@ -11,7 +11,7 @@
 
 
   /* defines the Size of the array */
-  #define SIZE 32
+  #define SIZE 3000
   #include <rtems/score/object.h>
   #include <limits.h>
   #include <math.h>
@@ -32,26 +32,45 @@
 	struct Element* prev;
   } typedef Element_struct;
 
-  struct Element* head[30]; // global variable - pointer to head node.
-
+  struct Element* head[SIZE]; // global variable - pointer to head node.
 
   //Creates a new Element and returns pointer to it. 
-  RTEMS_INLINE_ROUTINE struct Element* GetNewElement(Watchdog_Control* x) {
-	struct Element* newElement
-		= (struct Element*)malloc(sizeof(struct Element));
-	newElement->data = x;
-	newElement->prev = NULL;
-	newElement->next = NULL;
-	return newElement;
+  RTEMS_INLINE_ROUTINE struct Element* GetNewElement(Watchdog_Control *x) {
+        printk("1.112 ");	
+      struct Element newElement;
+        printk("1.113 ");
+	newElement.data = x;
+        printk("1.114 ");
+	newElement.prev = NULL;
+        printk("1.115 ");
+	newElement.next = NULL;
+        printk("1.116");
+	return &newElement;
   }
 
   //Inserts a Node at head of doubly linked list
   RTEMS_INLINE_ROUTINE struct Element* InsertAtHead(Watchdog_Control* x, int bucket) {
-	struct Element* newElement = GetNewElement(x);
+      printk(" \n 1 \n");
+      printk("%x \n",head[bucket]);
+      /*if(is_init[0]==0)
+      {
+          int i=0;
+          is_init[0]=1;
+       for(i=0;i<SIZE;i++)
+       {
+        head[i]=NULL;
+       }
+      } */
+      struct Element* newElement = GetNewElement(x);
+      printk("1.12 \n");
 	if(head[bucket] == NULL) {
-		head[bucket] = newElement;
+	    printk("2 \n");	
+             head[bucket] = newElement;
+             printk("3 \n");
+             printk("%x \n",head[bucket]);
 		return newElement;
 	}
+        printk("1.13");
 	head[bucket]->prev = newElement;
 	newElement->next = head[bucket]; 
 	head[bucket] = newElement;
@@ -96,7 +115,28 @@
 	}
   }
 
+RTEMS_INLINE_ROUTINE void _Bucket_Initialize()
+{
+ int i=0;
+ for( i=0; i<SIZE;i++)
+ {
+    head[i]=NULL;
+ }
+}
 
-
+RTEMS_INLINE_ROUTINE bool _bucket_is_empty(int bucket)
+{
+    if(head[bucket]==NULL)
+    {
+     return true;
+    }
+    printk("bucket not empty!!! \n");
+    return false;
+}
+RTEMS_INLINE_ROUTINE int Get_Bucket_Size()
+{
+    int i=SIZE;
+ return i;
+}
 #endif
     /* end of include file*/ 

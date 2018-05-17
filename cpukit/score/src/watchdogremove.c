@@ -17,7 +17,6 @@
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
-#define SIZE 30
 #include <rtems/score/watchdogimpl.h>
 #include <rtems/score/assert.h>
 
@@ -175,7 +174,7 @@ void _Watchdog_Tickle(
     }
   }
 
-  _Watchdog_Release( header, &lock_context );
+ii  _Watchdog_Release( header, &lock_context );
 } */
 
 
@@ -193,6 +192,7 @@ Watchdog_States _Watchdog_Remove(
   _Watchdog_Acquire( header, &lock_context );
   previous_state = the_watchdog->state;
   int bucket;
+  printk("watchdog remove k!!! \n");
   switch ( previous_state ) {
     case WATCHDOG_INACTIVE:
       break;
@@ -210,8 +210,11 @@ Watchdog_States _Watchdog_Remove(
       break;
 
     case WATCHDOG_ACTIVE:
-      bucket= (the_watchdog->start_time + the_watchdog->initial) %SIZE;
+      bucket= (the_watchdog->start_time + the_watchdog->initial) %Get_Bucket_Size();
       RemoveElement(the_watchdog->Node, bucket);
+      the_watchdog->stop_time = now;
+      the_watchdog->state= WATCHDOG_INACTIVE;
+
       break;
   }
   _Watchdog_Release( header, &lock_context );
@@ -223,23 +226,24 @@ void _Watchdog_Tickle(
 )
 {
   ISR_lock_Context lock_context;
-  
   _Watchdog_Acquire( header, &lock_context );
   int bucket;
-  bucket = SIZE-(_Watchdog_Ticks_since_boot % SIZE);
-  Watchdog_Control* first = RemoveHead(bucket);
-  while(first != NULL)
+  
+  bucket = Get_Bucket_Size()-(_Watchdog_Ticks_since_boot % Get_Bucket_Size());
+  Watchdog_Control* first;
+  while(! _bucket_is_empty(bucket))
   {
-	bool                            run;
-      	Watchdog_Service_routine_entry  routine;
-      	Objects_Id                      id;
-     	void                           *user_data;
+      bool                            run;
+      Watchdog_Service_routine_entry  routine;
+      Objects_Id                      id;
+      void                           *user_data;
+      printk("watchdog has to be removed \n");
+      first=RemoveHead(bucket);
+      run = ( first->state == WATCHDOG_ACTIVE );
 
-      	run = ( first->state == WATCHDOG_ACTIVE );
 
 
-
-	routine = first->routine;
+      routine = first->routine;
       id = first->id;
       user_data = first->user_data;
 
@@ -252,9 +256,7 @@ void _Watchdog_Tickle(
 
 	_Watchdog_Acquire( header, &lock_context );
 
-
-
-  	Watchdog_Control* first = RemoveHead(bucket);  
+  
   }
   _Watchdog_Release( header, &lock_context );
 }
