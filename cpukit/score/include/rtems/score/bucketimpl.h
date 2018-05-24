@@ -33,44 +33,34 @@
   } typedef Element_struct;
 
   struct Element* head[SIZE]; // global variable - pointer to head node.
+  //struct Element* reference;
 
   //Creates a new Element and returns pointer to it. 
-  RTEMS_INLINE_ROUTINE struct Element* GetNewElement(Watchdog_Control *x) {
-        printk("1.112 ");	
+  RTEMS_INLINE_ROUTINE struct Element* GetNewElement(Watchdog_Control *x) {	
       struct Element newElement;
-        printk("1.113 ");
-	newElement.data = x;
-        printk("1.114 ");
+	newElement.data=NULL;
+        newElement.data = x;
+        printk("data: %x\n",newElement.data);
 	newElement.prev = NULL;
-        printk("1.115 ");
 	newElement.next = NULL;
-        printk("1.116");
+        printk("newElement next: %x \n",newElement.next);
 	return &newElement;
   }
 
   //Inserts a Node at head of doubly linked list
   RTEMS_INLINE_ROUTINE struct Element* InsertAtHead(Watchdog_Control* x, int bucket) {
       printk(" \n 1 \n");
-      printk("%x \n",head[bucket]);
-      /*if(is_init[0]==0)
-      {
-          int i=0;
-          is_init[0]=1;
-       for(i=0;i<SIZE;i++)
-       {
-        head[i]=NULL;
-       }
-      } */
+      printk("%x , %d\n",head[bucket], bucket);
       struct Element* newElement = GetNewElement(x);
-      printk("1.12 \n");
-	if(head[bucket] == NULL) {
-	    printk("2 \n");	
+      printk("directy after creation: %x \n",head[bucket]->next);
+      printk("Data after insert: %x",head[bucket]->data);
+	if(head[bucket] == NULL) {	
              head[bucket] = newElement;
-             printk("3 \n");
-             printk("%x \n",head[bucket]);
+             printk("%x , %d\n",head[bucket], bucket);
+             printk("here next: %x \n",head[bucket]->next);
 		return newElement;
 	}
-        printk("1.13");
+        printk("danger asdasdasd 1.13!!!!!!!!!!!!!!!!!");
 	head[bucket]->prev = newElement;
 	newElement->next = head[bucket]; 
 	head[bucket] = newElement;
@@ -78,24 +68,44 @@
   }
 
  RTEMS_INLINE_ROUTINE  Watchdog_Control* RemoveHead(int bucket){
-	Watchdog_Control* top = NULL;
+	printk("first next frint %x",head[bucket]->next);
+        printk("remove head triggerd \n");
+        Watchdog_Control* top = NULL;
+        printk("Bucket pointer :%x\n",head[bucket]);
 	if(head[bucket]!= NULL){
-		struct Element* first = head[bucket];
+		struct Element* first = NULL;
+                first = head[bucket];
+                printk("first: %x\n",first);
 		top = first->data;
-		head[bucket] = first->next;
-		if(first->next != NULL)
+                printk("top: %x \n", top);
+                printk("first not empty: %d",bucket);
+                printk("first -> next: %x \n",first->next);
+                //printk("reference-> next: %x", reference->next);
+		if(first->next!=NULL)
 		{
+                        printk("here not null");
 			first->next->prev = NULL;
 			first->next = NULL;
+                        head[bucket]=first->next;
 		}
+                else
+                {
+                    printk("null");
+                    head[bucket]=NULL;
+                }
 
 	}
+        printk("head removed \n");
+        if(top==NULL)
+        {
+            printk("top = NULL");
+        }
 	return top;
   }
   
  RTEMS_INLINE_ROUTINE  void RemoveElement (struct Element* x, int bucket){
 
-
+        printk("remove element trigggerd \n");
 	if(x==head[bucket])
 	{
 		head[bucket] = x->next;
@@ -117,6 +127,7 @@
 
 RTEMS_INLINE_ROUTINE void _Bucket_Initialize()
 {
+ //reference=GetNewElement(NULL);
  int i=0;
  for( i=0; i<SIZE;i++)
  {

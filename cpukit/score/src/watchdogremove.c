@@ -198,7 +198,7 @@ Watchdog_States _Watchdog_Remove(
       break;
 
     case WATCHDOG_BEING_INSERTED:
-
+    printk("beeing inserterd triggerd \n");
       /*
        *  It is not actually on the chain so just change the state and
        *  the Insert operation we interrupted will be aborted.
@@ -210,6 +210,7 @@ Watchdog_States _Watchdog_Remove(
       break;
 
     case WATCHDOG_ACTIVE:
+      printk("triggerd?");
       bucket= (the_watchdog->start_time + the_watchdog->initial) %Get_Bucket_Size();
       RemoveElement(the_watchdog->Node, bucket);
       the_watchdog->stop_time = now;
@@ -228,35 +229,45 @@ void _Watchdog_Tickle(
   ISR_lock_Context lock_context;
   _Watchdog_Acquire( header, &lock_context );
   int bucket;
-  
-  bucket = Get_Bucket_Size()-(_Watchdog_Ticks_since_boot % Get_Bucket_Size());
+  bucket = (Get_Bucket_Size()-(_Watchdog_Ticks_since_boot % Get_Bucket_Size()))%Get_Bucket_Size();
   Watchdog_Control* first;
   while(! _bucket_is_empty(bucket))
   {
+      printk(".c ->next: %x\n", head[bucket]->next);
+      printk("%d \n",bucket);
       bool                            run;
       Watchdog_Service_routine_entry  routine;
       Objects_Id                      id;
       void                           *user_data;
       printk("watchdog has to be removed \n");
       first=RemoveHead(bucket);
+      printk("watchdog exserted \n");
       run = ( first->state == WATCHDOG_ACTIVE );
-
-
-
+      if(first->state == WATCHDOG_INACTIVE)
+      {
+       printk("watchdog inactive \n");
+      }
+      if(first->state == WATCHDOG_BEING_INSERTED)
+      {
+      printk("watchdog beiing inserted");
+      }
+     printk("%x",first);
+      first->state=WATCHDOG_ACTIVE;
       routine = first->routine;
       id = first->id;
       user_data = first->user_data;
-
+    printk("here1"); 
       _Watchdog_Release( header, &lock_context );
-
+      
       if ( run ) {
-        (*routine)( id, user_data );
+          printk("run true  ");
+          (*routine)( id, user_data );
       }
-
+        printk("here2");
 
 	_Watchdog_Acquire( header, &lock_context );
-
-  
+        first->state=WATCHDOG_INACTIVE;
+  printk("here3 \n");
   }
   _Watchdog_Release( header, &lock_context );
 }

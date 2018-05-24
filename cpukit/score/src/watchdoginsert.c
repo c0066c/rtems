@@ -140,31 +140,30 @@ void _Watchdog_Insert_locked (Watchdog_Header  *header,
     {
         int size= Get_Bucket_Size();
         struct Element* element=NULL;
-        Watchdog_Control test= * the_watchdog;
-        printk("Watchdog initial: %d \n",test.initial);
         the_watchdog->state = WATCHDOG_BEING_INSERTED;
-        printk("ticks mod size %d \n",bucket);
         bucket = _Watchdog_Ticks_since_boot-size;
-	printk("size - bucket %d \n",bucket);
         bucket = size - bucket;
-        printk("size + bucket - watchdog initial mod size %d \n",bucket);
 	bucket = (size + bucket - the_watchdog->initial)%size;
-        printk("insert watchdog \n");
-        printk("bucket:%i",bucket);
         element = InsertAtHead(the_watchdog, bucket);
- 	printk("assaign to watchdog \n");
         the_watchdog->Node= element;
-        printk("flash \n");
         _Watchdog_Flash( header, lock_context );
 	if ( the_watchdog->state != WATCHDOG_BEING_INSERTED ) {
         	goto abort_insert;
       }
+        printk("Bucket inserted: %d", head[bucket]);
 	the_watchdog->start_time = _Watchdog_Ticks_since_boot;
         _Watchdog_Activate( the_watchdog );
+        the_watchdog->state=WATCHDOG_ACTIVE;
     }
-     printk("watchdog inserted");
+     printk("watchdog inserted %d",head[bucket]);
 
+     if(the_watchdog->state==WATCHDOG_ACTIVE)
+     {
+        printk("Watchdog is inserted and active");
+        printk("Watchdog next: %x\n",head[bucket]->next);
+     }
+     return;
 abort_insert:
-
+        printk("remove element while insert");
 	RemoveElement(the_watchdog->Node, bucket);
 }
