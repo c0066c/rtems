@@ -121,7 +121,6 @@ void _Watchdog_Insert(
   ISR_lock_Context lock_context;
 
   _Watchdog_Acquire( header, &lock_context );
-  printk("Insert locked called");
   _Watchdog_Insert_locked( header, the_watchdog, &lock_context);
   _Watchdog_Release( header, &lock_context );
 }
@@ -135,7 +134,6 @@ void _Watchdog_Insert_locked (Watchdog_Header  *header,
   ISR_lock_Context *lock_context)
 {
     int bucket;
-    printk("watchdog comput e\n");
     if(the_watchdog->state == WATCHDOG_INACTIVE)
     {
         int size= Get_Bucket_Size();
@@ -150,20 +148,11 @@ void _Watchdog_Insert_locked (Watchdog_Header  *header,
 	if ( the_watchdog->state != WATCHDOG_BEING_INSERTED ) {
         	goto abort_insert;
       }
-        printk("Bucket inserted: %d", head[bucket]);
 	the_watchdog->start_time = _Watchdog_Ticks_since_boot;
         _Watchdog_Activate( the_watchdog );
         the_watchdog->state=WATCHDOG_ACTIVE;
     }
-     printk("watchdog inserted %d",head[bucket]);
-
-     if(the_watchdog->state==WATCHDOG_ACTIVE)
-     {
-        printk("Watchdog is inserted and active");
-        printk("Watchdog next: %x\n",head[bucket]->next);
-     }
      return;
 abort_insert:
-        printk("remove element while insert");
 	RemoveElement(the_watchdog->Node, bucket);
 }
