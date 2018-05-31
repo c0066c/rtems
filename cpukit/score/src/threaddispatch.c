@@ -138,15 +138,13 @@ void _Thread_Do_dispatch( Per_CPU_Control *cpu_self, ISR_Level level )
     cpu_self->dispatch_necessary
 #endif
   );
-
 post_switch:
   _Assert( cpu_self->thread_dispatch_disable_level == 1 );
   cpu_self->thread_dispatch_disable_level = 0;
   _Profiling_Thread_dispatch_enable( cpu_self, 0 );
 
   _ISR_Enable_without_giant( level );
-
-  _Thread_Run_post_switch_actions( executing );
+  _Thread_Run_post_switch_actions( executing ); 
 }
 
 void _Thread_Dispatch( void )

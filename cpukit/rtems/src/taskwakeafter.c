@@ -40,7 +40,7 @@ rtems_status_code rtems_task_wake_after(
       _Thread_Yield( executing );
     } else {
       _Thread_Set_state( executing, STATES_DELAYING );
-      _Thread_Wait_flags_set( executing, THREAD_WAIT_STATE_BLOCKED );
+      _Thread_Wait_flags_set( executing, THREAD_WAIT_STATE_BLOCKED ); 
       _Watchdog_Initialize(
         &executing->Timer,
         _Thread_Timeout,

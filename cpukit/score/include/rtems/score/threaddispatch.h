@@ -306,9 +306,7 @@ RTEMS_INLINE_ROUTINE void _Thread_Dispatch_enable( Per_CPU_Control *cpu_self )
 
   if ( disable_level == 1 ) {
     ISR_Level level;
-
     _ISR_Disable_without_giant( level );
-
     if ( cpu_self->dispatch_necessary ) {
       _Thread_Do_dispatch( cpu_self, level );
     } else {
