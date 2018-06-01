@@ -137,13 +137,12 @@ void _Watchdog_Insert_locked (Watchdog_Header  *header,
     if(the_watchdog->state == WATCHDOG_INACTIVE)
     {
         int size= Get_Bucket_Size();
-        struct Element* element=NULL;
         the_watchdog->state = WATCHDOG_BEING_INSERTED;
         bucket = _Watchdog_Ticks_since_boot-size;
         bucket = size - bucket;
 	bucket = (size + bucket - the_watchdog->initial)%size;
-        element = InsertAtHead(the_watchdog, bucket);
-        the_watchdog->Node= element;
+        struct Element a= InsertAtHead(the_watchdog, bucket);
+        the_watchdog->Node= &a;
         _Watchdog_Flash( header, lock_context );
 	if ( the_watchdog->state != WATCHDOG_BEING_INSERTED ) {
         	goto abort_insert;
