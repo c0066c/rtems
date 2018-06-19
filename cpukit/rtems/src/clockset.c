@@ -26,28 +26,18 @@
 rtems_status_code rtems_clock_set(
   const rtems_time_of_day *tod
 )
-{
-  printf("before 1. if");
+{  
   if ( !tod )
-    return RTEMS_INVALID_ADDRESS;
-  printf("maybe print f works?");
-  printf("before 2. if");
+    return RTEMS_INVALID_ADDRESS; 
   if ( _TOD_Validate( tod ) ) {
-    printf("before create timestamp");
     Timestamp_Control tod_as_timestamp;
-    printk("after creating timestamp");
     uint32_t seconds = _TOD_To_seconds( tod );
     uint32_t nanoseconds = tod->ticks
-      * rtems_configuration_get_nanoseconds_per_tick();
-     printf("before timestamp");
+    * rtems_configuration_get_nanoseconds_per_tick();
     _Timestamp_Set( &tod_as_timestamp, seconds, nanoseconds );
-    printk("or here \n");
     _Thread_Disable_dispatch();
-    printk("after disable");
       _TOD_Set_with_timestamp( &tod_as_timestamp );
-      printk("after set with");
     _Thread_Enable_dispatch();
-     printk("at the end");
     return RTEMS_SUCCESSFUL;
   }
 

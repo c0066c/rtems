@@ -40,6 +40,7 @@ rtems_task Task_1_through_3(
     print_time( " - rtems_clock_get_tod - ", &time, "\n" );
 
     status = rtems_task_wake_after( ticks );
+    print_time( " - rtems_clock_get_tod - ", &time, "\n" );
     directive_failed( status, "rtems_task_wake_after" );
   }
 }

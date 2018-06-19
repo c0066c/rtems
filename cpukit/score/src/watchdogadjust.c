@@ -25,7 +25,7 @@ void _Watchdog_Adjust_backward_locked(
   Watchdog_Interval  units
 )
 {
-
+ _Watchdog_Ticks_since_boot --;
 }
 
 void _Watchdog_Adjust_backward(
@@ -46,7 +46,7 @@ void _Watchdog_Adjust_forward_locked(
   ISR_lock_Context  *lock_context
 )
 {
-  
+ _Watchdog_Ticks_since_boot ++; 
 }
 
 void _Watchdog_Adjust_forward(

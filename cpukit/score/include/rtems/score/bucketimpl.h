@@ -26,10 +26,10 @@
   #include<stdio.h>
   #include<stdlib.h>
 
-  struct Element  {
+   struct Element  {
 	Watchdog_Control* data;
 	struct Element* next;
-	struct Element* prev;
+	volatile struct Element* prev;
   } typedef Element_struct;
   struct Element* head[SIZE]; // global variable - pointer to head node.
   //struct Element* reference;
@@ -45,11 +45,10 @@
   }
 
   //Inserts a Node at head of doubly linked list
-  RTEMS_INLINE_ROUTINE struct Element InsertAtHead(Watchdog_Control* x, int bucket) {
+  RTEMS_INLINE_ROUTINE struct Element InsertAtHead(Watchdog_Control* x, volatile int bucket) {
       //printk(" \n 1 \n");
       //printk("%x , %d\n",head[bucket], bucket);
       struct Element newElement = GetNewElement(x);
-
       //printk("directy after creation: %x \n",head[bucket]->next);
       //printk("Data after insert: %x",head[bucket]->data);
 	if(head[bucket] == NULL) {	
@@ -65,36 +64,26 @@
         return newElement;
   }
 
- RTEMS_INLINE_ROUTINE  Watchdog_Control* RemoveHead(int bucket){
-	//printk("first next frint %x",head[bucket]->next);
-        //printk("remove head triggerd \n");
-        Watchdog_Control* top = NULL;
-    		struct Element* first = NULL;
-                bucket=bucket%SIZE;
-                first = head[bucket];
-		top = first->data;
-		if(first->next)
+ RTEMS_INLINE_ROUTINE  Watchdog_Control* RemoveHead(volatile int bucket){
+                struct Element first = *head[bucket];
+
+		if(first.next)
 		{
-                        head[bucket]=first->next;
-			first->next->prev = NULL;
-			first->next = NULL;
-                        
+                        head[bucket]=first.next;
+			first.next->prev = NULL;
+			first.next = NULL;
 		}
                 else
                 {
-                   // printk("null");
                     head[bucket]=NULL;
                 }
-        /*if(top==NULL)
-        {
-            printk("top = NULL");
-        }*/
-	return top;
+
+
+	return first.data;
   }
   
- RTEMS_INLINE_ROUTINE  void RemoveElement (struct Element* x, int bucket){
+ RTEMS_INLINE_ROUTINE  void RemoveElement (struct Element* x, volatile int bucket){
 
-        //printk("remove element trigggerd \n");
 	if(x==head[bucket])
 	{
 		head[bucket] = x->next;
@@ -124,14 +113,12 @@ RTEMS_INLINE_ROUTINE void _Bucket_Initialize()
  }
 }
 
-RTEMS_INLINE_ROUTINE bool _bucket_is_empty(int bucket)
-{
-    bucket=bucket%SIZE;   
+RTEMS_INLINE_ROUTINE bool _bucket_is_empty(volatile int bucket)
+{   
     if(!head[bucket])
     {
      return true;
     }
-    //printk("bucket not empty!!! \n");
     return false;
 }
 RTEMS_INLINE_ROUTINE int Get_Bucket_Size()

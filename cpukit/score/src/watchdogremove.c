@@ -228,18 +228,20 @@ void _Watchdog_Tickle(
   int bucket;
   bucket = (Get_Bucket_Size()-(_Watchdog_Ticks_since_boot % Get_Bucket_Size()))%Get_Bucket_Size();
   Watchdog_Control* first;
+  bucket=bucket%Get_Bucket_Size();
   while(! _bucket_is_empty(bucket))
   {
       bool                            run;
       Watchdog_Service_routine_entry  routine;
       Objects_Id                      id;
       void                           *user_data;
+            
             first=RemoveHead(bucket);
-            run = ( first->state == WATCHDOG_ACTIVE );
-           routine = first->routine;
-      id = first->id;
-      user_data = first->user_data;
-         _Watchdog_Release( header, &lock_context );
+                run = ( first->state == WATCHDOG_ACTIVE );
+                routine = first->routine;
+                id = first->id;
+                user_data = first->user_data;
+                _Watchdog_Release( header, &lock_context );
       
       if ( run ) {
           (*routine)( id, user_data );
@@ -247,5 +249,6 @@ void _Watchdog_Tickle(
      	_Watchdog_Acquire( header, &lock_context );
         first->state=WATCHDOG_INACTIVE;
   }
+  
   _Watchdog_Release( header, &lock_context );
 }
