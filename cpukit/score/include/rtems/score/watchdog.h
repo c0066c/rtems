@@ -101,7 +101,7 @@ typedef struct {
    */
   struct Element*                 Node; 
   /** This field is the state of the watchdog. */
-  Watchdog_States                 state;
+    Watchdog_States                 state;
   /** This field is the initially requested interval. */
   Watchdog_Interval               initial;
   /** This field is the remaining portion of the interval. */

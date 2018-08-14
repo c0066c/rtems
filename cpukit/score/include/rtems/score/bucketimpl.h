@@ -12,11 +12,14 @@
 
   /* defines the Size of the array */
   #define SIZE 3000
+  #define GRANULARITY 1
+  #define NOGRANULARITY
   #include <rtems/score/object.h>
   #include <limits.h>
   #include <math.h>
   #include <rtems/score/assert.h>
   #include <rtems/score/isrlock.h>
+  #include <rtems/score/isr.h>
   #include <rtems/score/chainimpl.h>
   #include <rtems/score/bucket.h>
   #include <rtems/score/watchdog.h>
@@ -26,12 +29,17 @@
   #include<stdio.h>
   #include<stdlib.h>
 
-   struct Element  {
-	Watchdog_Control* data;
+  volatile struct Element  {
+	volatile Watchdog_Control* data;
 	struct Element* next;
 	volatile struct Element* prev;
   } typedef Element_struct;
-  struct Element* head[SIZE]; // global variable - pointer to head node.
+
+ volatile struct Bucket_Interval{
+     volatile uint32_t sema;
+ };
+  volatile struct Element* head[SIZE]; // global variable - pointer to head node.
+  volatile struct Bucket_Interval bucketsema;
   //struct Element* reference;
   //Creates a new Element and returns pointer to it. 
   RTEMS_INLINE_ROUTINE struct Element GetNewElement(Watchdog_Control *x) {	
@@ -45,7 +53,9 @@
   }
 
   //Inserts a Node at head of doubly linked list
-  RTEMS_INLINE_ROUTINE struct Element InsertAtHead(Watchdog_Control* x, volatile int bucket) {
+  RTEMS_INLINE_ROUTINE struct Element InsertAtHead(Watchdog_Control* x, volatile uint32_t bucket) {
+     //while(bucketsema.sema<=0);
+      //bucketsema.sema--;
       //printk(" \n 1 \n");
       //printk("%x , %d\n",head[bucket], bucket);
       struct Element newElement = GetNewElement(x);
@@ -64,26 +74,37 @@
         return newElement;
   }
 
- RTEMS_INLINE_ROUTINE  Watchdog_Control* RemoveHead(volatile int bucket){
-                struct Element first = *head[bucket];
-
-		if(first.next)
+ RTEMS_INLINE_ROUTINE   Watchdog_Control*  RemoveHead(volatile uint32_t bucket){
+                volatile struct Element first = *head[bucket];
+                volatile uint32_t bucketlocal=bucket;
+               Watchdog_Control*  value=NULL;
+		if(first.next != NULL)
 		{
-                        head[bucket]=first.next;
-			first.next->prev = NULL;
-			first.next = NULL;
+                    volatile struct Element* current=head[bucketlocal];
+                    if(current==&first)
+                    {
+                        head[bucketlocal]=first.next;
+                    }
+                    else
+                    {
+                        head[bucketlocal]=NULL;
+                    }
 		}
                 else
                 {
-                    head[bucket]=NULL;
+                    head[bucketlocal]=NULL;
                 }
-
-
-	return first.data;
+                if(first.next==head[bucketlocal]||first.next==first.next->next)
+                {
+                    value=first.data;
+                }
+                bucketlocal++;
+	return value;
   }
   
- RTEMS_INLINE_ROUTINE  void RemoveElement (struct Element* x, volatile int bucket){
-
+ RTEMS_INLINE_ROUTINE  void RemoveElement (struct Element* x, volatile uint32_t bucket){
+        //while(bucketsema.sema <=0);
+        //bucketsema.sema--;
 	if(x==head[bucket])
 	{
 		head[bucket] = x->next;
@@ -101,6 +122,7 @@
 	{
 		x->prev->next = NULL; 
 	}
+        //bucketsema.sema++;
   }
 
 RTEMS_INLINE_ROUTINE void _Bucket_Initialize()
@@ -111,9 +133,10 @@ RTEMS_INLINE_ROUTINE void _Bucket_Initialize()
  {
     head[i]=NULL;
  }
+ bucketsema.sema=1;
 }
 
-RTEMS_INLINE_ROUTINE bool _bucket_is_empty(volatile int bucket)
+RTEMS_INLINE_ROUTINE bool _bucket_is_empty(volatile uint32_t bucket)
 {   
     if(!head[bucket])
     {
@@ -127,6 +150,9 @@ RTEMS_INLINE_ROUTINE int Get_Bucket_Size()
  return i;
 }
 
-
+RTEMS_INLINE_ROUTINE int _Get_Granularity()
+{
+    return GRANULARITY;
+}
 #endif
     /* end of include file*/ 

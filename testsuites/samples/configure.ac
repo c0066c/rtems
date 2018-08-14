@@ -76,5 +76,6 @@ iostream/Makefile
 cdtest/Makefile
 pppd/Makefile
 capture/Makefile
+sp04/Makefile
 ])
 AC_OUTPUT

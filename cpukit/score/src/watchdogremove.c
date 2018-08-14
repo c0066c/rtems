@@ -19,6 +19,8 @@
 #endif
 #include <rtems/score/watchdogimpl.h>
 #include <rtems/score/assert.h>
+#include <rtems/score/isrlock.h>
+  #include <rtems/score/isr.h>
 
 /*static void _Watchdog_Remove_it(
   Watchdog_Header   *header,
@@ -199,8 +201,7 @@ Watchdog_States _Watchdog_Remove(
     case WATCHDOG_BEING_INSERTED:
       /*
        *  It is not actually on the chain so just change the state and
-       *  the Insert operation we interrupted will be aborted.
-       */
+       *  the Insert operation we interrupted will be aborted.       */
       the_watchdog->state = WATCHDOG_INACTIVE;
       now = _Watchdog_Ticks_since_boot;
       the_watchdog->start_time = now;
@@ -208,7 +209,15 @@ Watchdog_States _Watchdog_Remove(
       break;
 
     case WATCHDOG_ACTIVE:
-      bucket= (the_watchdog->start_time + the_watchdog->initial) %Get_Bucket_Size();
+      bucket=the_watchdog->start_time;
+#ifndef NOGRANULARITY
+      bucket= (bucket/_Get_Granularity());
+#endif
+      bucket= bucket + the_watchdog->initial;
+      if(bucket>=Get_Bucket_Size())
+      {
+       bucket=bucket-Get_Bucket_Size();
+      }
       RemoveElement(the_watchdog->Node, bucket);
       the_watchdog->stop_time = now;
       the_watchdog->state= WATCHDOG_INACTIVE;
@@ -224,31 +233,50 @@ void _Watchdog_Tickle(
 )
 {
   ISR_lock_Context lock_context;
-  _Watchdog_Acquire( header, &lock_context );
-  int bucket;
-  bucket = (Get_Bucket_Size()-(_Watchdog_Ticks_since_boot % Get_Bucket_Size()))%Get_Bucket_Size();
-  Watchdog_Control* first;
-  bucket=bucket%Get_Bucket_Size();
+ _Watchdog_Acquire( header, &lock_context );
+   volatile uint32_t bucket;
+#ifndef NOGRANULARITY
+   int granularity= _Get_Granularity();
+
+   int adjusted=_Watchdog_Ticks_since_boot/granularity;
+   if(adjusted>=Get_Bucket_Size())
+   {
+    _Watchdog_Ticks_since_boot=0;
+   }
+  bucket = Get_Bucket_Size()-adjusted;
+#endif
+#ifdef NOGRANULARITY
+  if(_Watchdog_Ticks_since_boot>=Get_Bucket_Size())
+          {
+            _Watchdog_Ticks_since_boot=0;
+          }
+    bucket=Get_Bucket_Size()-_Watchdog_Ticks_since_boot;
+#endif
+  if(bucket>=Get_Bucket_Size())
+  {
+    bucket=bucket-Get_Bucket_Size();
+  }
+   volatile Watchdog_Control* first;
   while(! _bucket_is_empty(bucket))
   {
       bool                            run;
       Watchdog_Service_routine_entry  routine;
       Objects_Id                      id;
       void                           *user_data;
-            
-            first=RemoveHead(bucket);
-                run = ( first->state == WATCHDOG_ACTIVE );
-                routine = first->routine;
-                id = first->id;
-                user_data = first->user_data;
-                _Watchdog_Release( header, &lock_context );
+             first=head[bucket]->data;
+            head[bucket]=head[bucket]->next;
+            Watchdog_States current_status=first->state;
+            run = ( current_status == WATCHDOG_ACTIVE );
+            routine = first->routine;
+            id = first->id;
+            user_data = first->user_data;
+            _Watchdog_Release( header, &lock_context );
       
       if ( run ) {
           (*routine)( id, user_data );
       }
      	_Watchdog_Acquire( header, &lock_context );
-        first->state=WATCHDOG_INACTIVE;
-  }
-  
+        _Watchdog_Inactivate(first);
+  } 
   _Watchdog_Release( header, &lock_context );
 }

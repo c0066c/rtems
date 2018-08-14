@@ -336,6 +336,11 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Activate(
   the_watchdog->state = WATCHDOG_ACTIVE;
 
 }
+RTEMS_INLINE_ROUTINE void _Watchdog_Inactivate( Watchdog_Control *the_watchdog
+)
+{
+    the_watchdog->state = WATCHDOG_INACTIVE;
+}
 
 /**
  * This routine is invoked at each clock tick to update the ticks
